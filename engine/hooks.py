@@ -8,8 +8,8 @@ import re
 
 HOOKS_IT = [
     # accessori prima dei prodotti: "borsa per notebook" è una borsa, "controller per smartphone" è un controller
-    (("custodia", "sleeve", "borsa"), ["Il tuo notebook protetto e sempre a portata di mano 💼",
-                                      "Ufficio, università o viaggio: il notebook viaggia comodo 💼"]),
+    (("custodia", "sleeve", "cover"), ["Protezione e stile, a un prezzo crollato 🛡️"]),
+    (("borsa",), ["Ufficio, università o viaggio: tutto a portata di mano 💼"]),
     (("zaino", "trolley", "valigia"), ["Porta tutto con te, con stile e senza pensieri 🎒"]),
     (("controller", "gamepad"), ["Prendi il controllo della partita 🎮",
                                  "Trasforma il telefono in una console: si gioca ovunque 🎮"]),
@@ -50,7 +50,9 @@ DEFAULT_IT = ["Un'occasione da non lasciarsi scappare 👀",
 def hook(name: str, key: str = "", lang: str = "it") -> str:
     if lang != "it":
         return ""
-    low = name.lower()
+    # solo le prime parole del nome: lì c'è il prodotto. Più avanti spesso c'è l'uso
+    # ("pinzette ... per riparazione del telefono") e la frase sbagliava prodotto. Niente "per X".
+    low = re.sub(r"\b(per|for|für|pour|compatibile con|compatible with)\s+\S+", " ", " ".join(name.lower().split()[:6]))
     pick = int(hashlib.md5((key or name).encode()).hexdigest(), 16)
     for words, phrases in HOOKS_IT:
         if any((re.search(rf"\b{re.escape(w)}\b", low) if len(w) <= 3 else w in low) for w in words):
