@@ -4,8 +4,8 @@ name: Motore offerte
 # Per accendere anche i canali: PROVA: "0".
 on:
   schedule:
-    # ogni 2 ore alle ore pari di Roma (inverno UTC+1): 14:00, 16:00, ...
-    - cron: "0 1-23/2 * * *"
+    # ogni ora (archivio pubblico: minuti GitHub gratis e illimitati; il limite sono i gettoni Keepa)
+    - cron: "0 * * * *"
   workflow_dispatch: {}
 
 env:
@@ -25,8 +25,8 @@ permissions:
 
 jobs:
   controlla:
-    # Se un giro è stato lanciato a mano da poco (meno di 75 minuti), il giro programmato successivo salta:
-    # così dopo un giro anticipato il ritmo resta ogni 2 ore.
+    # Se un giro è stato lanciato a mano da poco (meno di 40 minuti), il giro programmato successivo salta:
+    # così dopo un giro anticipato il ritmo resta ogni ora.
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -40,14 +40,14 @@ jobs:
           salta=false
           if [ "${{ github.event_name }}" = "schedule" ]; then
             t=$(gh run list -R ${{ github.repository }} -w motore.yml -e workflow_dispatch -L 1 --json createdAt -q '.[0].createdAt')
-            if [ -n "$t" ] && [ $(( $(date -u +%s) - $(date -u -d "$t" +%s) )) -lt 4500 ]; then salta=true; fi
+            if [ -n "$t" ] && [ $(( $(date -u +%s) - $(date -u -d "$t" +%s) )) -lt 2400 ]; then salta=true; fi
           fi
           echo "salta=$salta" >> $GITHUB_OUTPUT; echo "salta=$salta"
   run:
     needs: controlla
     if: needs.controlla.outputs.salta != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 58
     steps:
       - uses: actions/checkout@v4
 

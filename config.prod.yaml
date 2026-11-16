@@ -41,7 +41,8 @@ countries:
       min_price: 20
       trust_old_price: false
       repost_after_days: 30
-      max_posts_per_run: 18     # 15-20 per sito a giro, divise tra i negozi (15/11/2026)
+      max_posts_per_run: 9      # giro ogni ora: 9 per sito (prima 18 ogni 2 ore), divise tra i negozi
+      pause_between_posts: 120  # un post ogni 2 minuti, non tutti insieme
     sources:
     - name: awin_sodeal_ch
       type: feed
@@ -125,7 +126,8 @@ countries:
       min_price: 20
       trust_old_price: false
       repost_after_days: 30
-      max_posts_per_run: 18     # 15-20 per sito a giro, divise tra i negozi (15/11/2026)
+      max_posts_per_run: 9      # giro ogni ora: 9 per sito (prima 18 ogni 2 ore), divise tra i negozi
+      pause_between_posts: 120  # un post ogni 2 minuti, non tutti insieme
     sources:
     - name: awin_acer_it
       type: feed
