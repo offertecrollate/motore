@@ -415,6 +415,7 @@ a{color:#111}
 .xbar .search:focus-within{box-shadow:0 0 0 3px #e30613}
 .xbar .sbtn{display:flex;align-items:center;justify-content:center;align-self:stretch;width:64px;background:#e30613;color:#fff;border:0;padding:0;cursor:pointer}
 .hicons{display:flex;gap:6px;align-items:center}
+button.hic{background:none;border:0;cursor:pointer;font-family:inherit}
 .hic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:50px;padding:0 6px;border-radius:8px;color:#fff !important;text-decoration:none;font-size:11px;font-weight:400}
 .hic:hover{background:#1f1f1f}.hic.tg svg{color:#2aa6e0}.hic.fb svg{color:#3b82f6}.hic svg{width:22px;height:22px;flex:none}
 .hic .flagsvg{width:24px;height:24px;border-radius:4px}
@@ -498,7 +499,7 @@ footer{color:#555}footer a{color:#333}
 @media (max-width:860px){
  .xbar{flex-wrap:wrap;gap:8px 10px;padding:8px 10px}.xbar .brand img{height:40px}
  .xbar .search{order:3;flex:1 1 100%;min-height:42px}
- .hicons{margin-left:auto}.hic{min-width:44px;min-height:40px}.hic span{display:none}.hic.sw span{display:block;font-size:10px}.hic.sw{min-width:0;padding:0 4px}
+ .hicons{margin-left:auto}.hic{min-width:44px;min-height:40px}.hic span{display:none}.hic.sw span,.hic.rf span{display:block;font-size:10px}.hic.sw,.hic.rf{min-width:0;padding:0 4px}
  .here{margin-left:0;font-size:12px}.here span{display:block;max-width:70px;white-space:normal}
  .xbar{gap:8px 6px}.xbar .brand img{height:36px}.hicons{gap:0}.hic{min-width:34px;padding:0 3px}.hic svg{width:24px;height:24px}.here{gap:5px;font-size:11px}.here span{max-width:58px}
  .xbar .langs{order:2}
@@ -768,6 +769,14 @@ TOPJS = r"""
 """
 
 
+# tasto "Aggiorna" (nella web app sul telefono la pagina non si ricarica da sola) + ricarica automatica
+# quando si torna nell'app dopo più di 10 minuti (richiesta di Giuseppe del 16/11/2026)
+RF_LBL = {"it": "Aggiorna", "de": "Neu laden", "fr": "Actualiser"}
+RF_PATH = '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>'
+RFJS = ("var ocT=Date.now();function ocRefresh(){var u=new URL(location.href);u.searchParams.set('r',Date.now());"
+        "location.replace(u.toString());}document.addEventListener('visibilitychange',function(){"
+        "if(document.visibilityState==='visible'&&Date.now()-ocT>600000)ocRefresh();});")
+
 SW_LBL = {"it": {"it": "Passa a Italia", "ch": "Passa a Svizzera"},
           "de": {"it": "Zu Italien", "ch": "Zur Schweiz"},
           "fr": {"it": "Vers l'Italie", "ch": "Vers la Suisse"}}
@@ -789,7 +798,9 @@ def _xbar(t: dict, country: str, home_href: str, root: str, search: str, langsw:
             f'<a class="hic tg" href="{TG_URL}" target="_blank" rel="noopener" aria-label="Telegram">{TG}<span>Telegram</span></a>'
             f'<a class="hic fb" href="{FB_URL}" target="_blank" rel="noopener" aria-label="Facebook">{FB}<span>Facebook</span></a>'
             f'<a class="hic sw" href="{base_url(other)}/">{FLAG_SVG[other]}<span>{SW_LBL[lang][other]}</span></a>'
-            f'</nav></div>')
+            f'<button type="button" class="hic rf" onclick="ocRefresh()" aria-label="{RF_LBL.get(lang, RF_LBL["it"])}">'
+            f'{_svg(RF_PATH, 22, 2.2)}<span>{RF_LBL.get(lang, RF_LBL["it"])}</span></button>'
+            f'</nav></div><script>{RFJS}</script>')
 
 
 def _rcol(t: dict) -> str:
