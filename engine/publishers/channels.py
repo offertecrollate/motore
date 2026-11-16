@@ -47,31 +47,39 @@ class TelegramPublisher(_Base):
         text = post_text(deal, self.lang, self.cfg.get('post_tag', ''))
         if self.cfg.get("site_url"):   # riga fissa che porta a tutte le offerte sul sito
             text += f"\n\n🌐 Tutte le offerte: {self.cfg['site_url']}"
+        # link nascosto dietro "Vai all'offerta" (niente indirizzi lunghissimi, decisione di Giuseppe 16/11/2026)
+        import html as _h
+        plain = text
+        url = deal.product.url
+        lbl = {"it": "VAI ALL'OFFERTA", "de": "ZUM ANGEBOT", "fr": "VOIR L'OFFRE"}.get(self.lang, "VAI ALL'OFFERTA")
+        text = _h.escape(plain).replace(_h.escape(f"👉 {url}"), f'👉 <a href="{_h.escape(url)}"><b>{lbl}</b></a>')
         card = deal.extra.get("card")
         if card:
             r = requests.post(f"{api}/sendPhoto", timeout=60, data={
-                "chat_id": self.cfg["chat_id"], "caption": text[:1024]},
+                "chat_id": self.cfg["chat_id"], "caption": text[:1024], "parse_mode": "HTML"},
                 files={"photo": _img(card)})
         elif deal.product.image and not deal.extra.get("adult"):   # adulti: mai la foto del negozio
             r = requests.post(f"{api}/sendPhoto", timeout=30, data={
                 "chat_id": self.cfg["chat_id"], "photo": deal.product.image,
-                "caption": text[:1024]})
+                "caption": text[:1024], "parse_mode": "HTML"})
         else:
             # senza foto (es. Amazon): anteprima grande del link SOPRA il testo, così l'immagine si vede subito
             r = requests.post(f"{api}/sendMessage", timeout=30, data={
-                "chat_id": self.cfg["chat_id"], "text": text,
+                "chat_id": self.cfg["chat_id"], "text": text, "parse_mode": "HTML",
                 "link_preview_options": json.dumps({"url": deal.product.url, "prefer_large_media": True,
                                                     "show_above_text": True})})
         r.raise_for_status()
         res = r.json().get("result", {})
-        self.last_text = text
+        self.last_text = plain
         return ("photo" if res.get("photo") else "text", res.get("message_id"), "")
 
     def end(self, msg: dict, lang: str = "it") -> None:
         import html as _h
         api = f"https://api.telegram.org/bot{self.cfg['bot_token']}"
         head = {"it": "❌ OFFERTA TERMINATA", "de": "❌ ANGEBOT BEENDET", "fr": "❌ OFFRE TERMINÉE"}.get(lang)
-        body = f"<b>{head}</b>\n\n<s>{_h.escape(msg['text'])}</s>"
+        import re as _re
+        testo = _re.sub(r"\n*👉 https?://\S+", "", msg["text"])
+        body = f"<b>{head}</b>\n\n<s>{_h.escape(testo)}</s>"
         method, field = ("editMessageCaption", "caption") if msg["kind"] == "photo" else ("editMessageText", "text")
         r = requests.post(f"{api}/{method}", timeout=30, data={
             "chat_id": self.cfg["chat_id"], "message_id": msg["ref"], field: body[:1024 if field == "caption" else 4096],
