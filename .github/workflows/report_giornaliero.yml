@@ -1,0 +1,22 @@
+name: Resoconto serale (clic e vendite)
+on:
+  schedule:
+    - cron: "37 20 * * *"   # ogni sera alle 21:37 di Roma (inverno)
+  workflow_dispatch:
+    inputs:
+      extra:
+        description: "Testo in più (es. vendite Amazon)"
+        required: false
+        default: ""
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install requests
+      - env:
+          AWIN_API_TOKEN: ${{ secrets.AWIN_API_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+          EXTRA: ${{ inputs.extra }}
+        run: python tools/report_giornaliero.py
