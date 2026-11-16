@@ -24,6 +24,7 @@ def _svg(path: str, size: int = 22, sw: float = 2) -> str:
 
 
 I = {  # icone a tratto
+    "globe": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/>',
     "home": '<path d="M3 11 12 3.5 21 11"/><path d="M5.5 9.5V20h13V9.5"/>',
     "offers": '<path d="M3 12V4.5A1.5 1.5 0 0 1 4.5 3H12l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
     "errors": '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
@@ -416,6 +417,13 @@ a{color:#111}
 .xbar .sbtn{display:flex;align-items:center;justify-content:center;align-self:stretch;width:64px;background:#e30613;color:#fff;border:0;padding:0;cursor:pointer}
 .hicons{display:flex;gap:6px;align-items:center}
 button.hic{background:none;border:0;cursor:pointer;font-family:inherit}
+.sbtn.ovb{width:auto;padding:0 14px;gap:6px;background:#111;color:#fff;font:600 14px Inter,system-ui,Arial,sans-serif;border:0;cursor:pointer;display:flex;align-items:center}
+label.search .sbtn.ovb{border-radius:20px;min-height:40px}
+.ovq{margin:0 0 18px;padding:18px 20px;border:2px solid #e30613;border-radius:14px;background:#fff7f7}
+.ovq.hidden{display:none}.ovq p{margin:0 0 12px;font-weight:700;font-size:17px;color:#111}
+.ovqb{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.ovqb a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:#e30613;color:#fff;font-weight:700;text-decoration:none}
+.ovq small{color:#666}
 .hic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:50px;padding:0 6px;border-radius:8px;color:#fff !important;text-decoration:none;font-size:11px;font-weight:400}
 .hic:hover{background:#1f1f1f}.hic.tg svg{color:#2aa6e0}.hic.fb svg{color:#3b82f6}.hic svg{width:22px;height:22px;flex:none}
 .hic .flagsvg{width:24px;height:24px;border-radius:4px}
@@ -560,6 +568,7 @@ JS = r"""
   document.getElementById('count').textContent=n+' '+(n===1?L.one:L.many);
   var e=document.getElementById('empty'); e.classList.toggle('hidden',n>0);
   document.getElementById('emptytxt').textContent=(st.tab==='favs'&&!q)?L.nofav:L.none;
+  if(window.ocOvq) ocOvq(st.q,n,st.ovq);
  }
  function group(sel,key,toggle){ [].forEach.call(document.querySelectorAll(sel),function(b){ b.addEventListener('click',function(){
    var v=b.dataset.v; if(key==='min')v=+v; st[key]=(toggle&&st[key]===v)?(key==='min'?0:''):v;
@@ -569,8 +578,8 @@ JS = r"""
    if(g&&g.getBoundingClientRect().top<(f?f.offsetHeight:0)) window.scrollTo({top:g.getBoundingClientRect().top+window.scrollY-(f?f.offsetHeight:0)-12}); }); }); }
  group('[data-k=min]','min',true); group('[data-k=tab]','tab',true);
  window.ocCats=function(l){st.cats=l;apply();};
- var q=document.getElementById('q'); if(q)q.addEventListener('input',function(){st.q=q.value;apply();});
- try{var qp=new URLSearchParams(location.search).get('q'); if(q&&qp){q.value=qp; st.q=qp;}}catch(e){}
+ var q=document.getElementById('q'); if(q)q.addEventListener('input',function(){st.q=q.value;st.ovq=false;apply();});
+ try{var up=new URLSearchParams(location.search),qp=up.get('q'); if(q&&qp){q.value=qp; st.q=qp; st.ovq=up.get('ovunque')==='1';}}catch(e){}
  var s=document.getElementById('shop'); if(s)s.addEventListener('change',function(){st.shop=s.value;apply();});
  var r=document.getElementById('reset'); if(r)r.addEventListener('click',function(){st={tab:'',min:0,shop:'',cats:[],q:''}; if(q)q.value=''; if(s)s.value=''; [].forEach.call(document.querySelectorAll('.catform input'),function(x){x.checked=false;});
   [].forEach.call(document.querySelectorAll('[aria-pressed]'),function(x){ if(!x.classList.contains('fav')) x.setAttribute('aria-pressed','false');}); apply();});
@@ -777,6 +786,29 @@ RFJS = ("var ocT=Date.now();function ocRefresh(){var u=new URL(location.href);u.
         "location.replace(u.toString());}document.addEventListener('visibilitychange',function(){"
         "if(document.visibilityState==='visible'&&Date.now()-ocT>600000)ocRefresh();});")
 
+# "Cerca ovunque": cerca la parola nei negozi affiliati (link affiliato) anche se l'offerta non è sul sito
+# (richiesta di Giuseppe del 16/11/2026)
+OVQ_LBL = {"it": ("Ovunque", 'Cerca «%s» nei negozi partner', "Si apre il sito del negozio · link affiliati #ADV"),
+           "de": ("Überall", "«%s» bei unseren Partnershops suchen", "Öffnet den Shop · Affiliate-Links #ADV"),
+           "fr": ("Partout", "Chercher «%s» chez nos partenaires", "Ouvre le site du magasin · liens affiliés #ADV")}
+_AW = "https://www.awin1.com/cread.php?awinmid=%d&awinaffid=3152592&clickref=cerca&ued="
+OVQ_SHOPS = {
+    "it": [["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""],
+           ["Onestreet", _AW % 128805, "https://onestreet.it/search?q="],
+           ["Celebre Store", _AW % 118201, "https://celebrestore.com/search?q="],
+           ["Acer Store", _AW % 15530, "https://store.acer.com/it-it/catalogsearch/result/?q="]],
+    "ch": [["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""]],
+}
+OVQJS = ("function ocOvqUrl(s,q){return s[2]?s[1]+encodeURIComponent(s[2]+encodeURIComponent(q)):s[1]+encodeURIComponent(q);}"
+         "function ocOvq(q,n,force){var p=document.getElementById('ovq');if(!p)return;q=(q||'').trim();"
+         "if(!q||!(force||n===0)){p.classList.add('hidden');return;}"
+         "document.getElementById('ovqt').textContent=OCL[1].replace('%s',q);"
+         "document.getElementById('ovqb').innerHTML=OCS.map(function(s){return '<a href=\"'+ocOvqUrl(s,q)+'\" target=\"_blank\" rel=\"sponsored noopener\">'+s[0]+' ›</a>';}).join('');"
+         "p.classList.remove('hidden');}"
+         "function ocOvunque(){var i=document.getElementById('q');var q=(i&&i.value||'').trim();if(!q){if(i)i.focus();return;}"
+         "if(!document.getElementById('ovq')){location.href=OCH+'?q='+encodeURIComponent(q)+'&ovunque=1';return;}"
+         "ocOvq(q,0,true);document.getElementById('ovq').scrollIntoView({behavior:'smooth',block:'center'});}")
+
 SW_LBL = {"it": {"it": "Passa a Italia", "ch": "Passa a Svizzera"},
           "de": {"it": "Zu Italien", "ch": "Zur Schweiz"},
           "fr": {"it": "Vers l'Italie", "ch": "Vers la Suisse"}}
@@ -800,7 +832,8 @@ def _xbar(t: dict, country: str, home_href: str, root: str, search: str, langsw:
             f'<a class="hic sw" href="{base_url(other)}/">{FLAG_SVG[other]}<span>{SW_LBL[lang][other]}</span></a>'
             f'<button type="button" class="hic rf" onclick="ocRefresh()" aria-label="{RF_LBL.get(lang, RF_LBL["it"])}">'
             f'{_svg(RF_PATH, 22, 2.2)}<span>{RF_LBL.get(lang, RF_LBL["it"])}</span></button>'
-            f'</nav></div><script>{RFJS}</script>')
+            f'</nav></div><script>{RFJS}var OCS={json.dumps(OVQ_SHOPS.get(country, []))};'
+            f'var OCL={json.dumps(OVQ_LBL.get(lang, OVQ_LBL["it"]), ensure_ascii=False)};var OCH={json.dumps(home_href)};{OVQJS}</script>')
 
 
 def _rcol(t: dict) -> str:
@@ -827,7 +860,8 @@ def _shell(country: str, lang: str, langs: list, t: dict, ui: dict, title: str, 
     home_href = _home_path(lang, langs)
     search = (f'<form class="search" action="{home_href}" method="get" role="search"><span class="sr">{t["search"]}</span>{_svg(I["search"], 22, 2.2)}'
               f'<input id="q" name="q" type="search" placeholder="{t["search"]}" autocomplete="off">'
-              f'<button class="sbtn" type="submit" aria-label="{t["search_go"]}">{_svg(I["search"], 22, 2.4)}</button></form>')
+              f'<button class="sbtn" type="submit" aria-label="{t["search_go"]}">{_svg(I["search"], 22, 2.4)}</button>'
+              f'<button type="button" class="sbtn ovb" onclick="ocOvunque()" aria-label="{OVQ_LBL.get(lang, OVQ_LBL["it"])[0]}">{_svg(I["globe"], 20, 2.2)}<span>{OVQ_LBL.get(lang, OVQ_LBL["it"])[0]}</span></button>'f'</form>')
     body = (
         f'<div class="stick">{_xbar(t, country, home_href, "/", search, langsw, lang)}</div>'
         f'<div class="wrap">' + main + _catnav(lang, langs, list(cat_list), t)
@@ -885,7 +919,8 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
         title = f'Offerte Crollate – {t["best"]} {t["in_" + country]}'
         search = (f'<label class="search"><span class="sr">{t["search"]}</span>{_svg(I["search"], 22, 2.2)}'
                   f'<input id="q" type="search" placeholder="{t["search"]}" autocomplete="off">'
-                  f'<span class="sbtn" aria-hidden="true">{_svg(I["search"], 22, 2.4)}</span></label>')
+                  f'<span class="sbtn" aria-hidden="true">{_svg(I["search"], 22, 2.4)}</span>'
+                  f'<button type="button" class="sbtn ovb" onclick="ocOvunque()" aria-label="{OVQ_LBL.get(lang, OVQ_LBL["it"])[0]}">{_svg(I["globe"], 20, 2.2)}<span>{OVQ_LBL.get(lang, OVQ_LBL["it"])[0]}</span></button>'f'</label>')
         filters = (
             f'<div class="filters" role="region" aria-label="{t["filter"]}"><span class="lbl">{_svg(I["filter"], 20, 2)}{t["filter"]}</span><span class="sep"></span>'
             f'<div class="chips" role="group" aria-label="{t["min"]}">{chips}</div>'
@@ -904,6 +939,7 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
         topzone = f'<div class="topzone">{hero}{_rcol(t)}</div>'
         offers = (
             f'<div class="layout">{_catside(lang, langs, counts, page_cats, t)}<div class="results">{topzone}'
+            f'<div class="ovq hidden" id="ovq"><p id="ovqt"></p><div class="ovqb" id="ovqb"></div><small>{OVQ_LBL.get(lang, OVQ_LBL["it"])[2]}</small></div>'
             f'<p class="count" id="count" aria-live="polite"></p><div class="grid" id="grid">{cards}</div>'
             f'<div class="empty hidden" id="empty"><p id="emptytxt"></p><button type="button" id="reset">{t["reset"]}</button></div></div></div>'
         ) if items else f'<div class="results">{topzone}<div class="empty"><p>{t["soon"]}</p></div></div>'
