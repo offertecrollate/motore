@@ -1,0 +1,10 @@
+config.yaml
+*.db
+site_*/
+data/
+__pycache__/
+demo_out/
+.pytest_cache/
+site/
+site_it/
+site_ch/

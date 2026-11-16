@@ -1,0 +1,11 @@
+name: Prova prezzo barrato Amazon
+on: workflow_dispatch
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install requests
+      - env:
+          KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+        run: python -m tools.prova_basis

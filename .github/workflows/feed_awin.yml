@@ -1,0 +1,38 @@
+name: Elenco cataloghi Awin
+on:
+  workflow_dispatch:
+    inputs:
+      ids:
+        description: "ID inserzionisti (separati da spazio, vuoto = tutti)"
+        default: ""
+      campione:
+        description: "ID inserzionista di cui mostrare le colonne del catalogo"
+        default: ""
+env:
+  DB_PASS: ${{ secrets.DB_PASS }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_ADDRESS: ${{ secrets.OWNER_ADDRESS }}
+  ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  elenco:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - env:
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+          TELEGRAM_TOKEN: x
+          FB_PAGE_TOKEN: x
+        run: |
+          export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+          python -m tools.feed_awin ${{ inputs.ids }}
+          if [ "${{ inputs.campione }}" = "keepa" ]; then python -m tools.prova_keepa; exit 0; fi
+          if [ -n "${{ inputs.campione }}" ]; then python -m tools.feed_campione ${{ inputs.campione }}; fi

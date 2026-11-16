@@ -1,0 +1,50 @@
+name: Pulisci doppioni
+
+# Cancella da Telegram e Facebook i post doppi (tiene solo il più recente di ogni offerta).
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: motore
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DB_PASS: ${{ secrets.DB_PASS }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_ADDRESS: ${{ secrets.OWNER_ADDRESS }}
+  ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  pulisci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Recupera lo storico
+        run: |
+          bash tools/dati.sh carica
+      - name: Configurazione
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+        run: |
+          export TELEGRAM_TOKEN=$(printf %s "$TELEGRAM_TOKEN" | tr -d '[:space:]')
+          export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
+          export FB_PAGE_TOKEN=$(printf %s "$FB_PAGE_TOKEN" | tr -d '[:space:]')
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+      - name: Cancella i doppioni
+        run: python -m tools.pulisci_doppioni
+      - name: Salva lo storico
+        if: always()
+        run: |
+          bash tools/dati.sh salva

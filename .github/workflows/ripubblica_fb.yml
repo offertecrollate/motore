@@ -1,0 +1,58 @@
+name: Ripubblica su Facebook
+# Ripubblica sulla pagina le offerte ancora attive uscite prima di "dalle" (es. quando l'app era in sviluppo).
+on:
+  workflow_dispatch:
+    inputs:
+      prima_di:
+        description: "Ripubblica i post fatti prima di (UTC, es. 2026-11-15T18:15)"
+        required: true
+      massimo:
+        description: "Numero massimo di post"
+        default: "40"
+concurrency:
+  group: motore
+  cancel-in-progress: false
+permissions:
+  contents: write
+env:
+  DB_PASS: ${{ secrets.DB_PASS }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_ADDRESS: ${{ secrets.OWNER_ADDRESS }}
+  ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  ripubblica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Storico
+        run: bash tools/dati.sh carica
+      - name: Siti
+        env:
+          SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
+        run: |
+          git clone -q --depth 1 "https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/rinvio-it.git" site_it
+          git clone -q --depth 1 "https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/sito.git" site_ch
+      - name: Configurazione
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+        run: |
+          export TELEGRAM_TOKEN=$(printf %s "$TELEGRAM_TOKEN" | tr -d '[:space:]')
+          export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
+          export FB_PAGE_TOKEN=$(printf %s "$FB_PAGE_TOKEN" | tr -d '[:space:]')
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+      - run: python -m tools.ripubblica_fb "${{ inputs.prima_di }}" "${{ inputs.massimo }}"
+      - name: Salva lo storico prezzi (ramo "dati")
+        if: always()
+        run: |
+          bash tools/dati.sh salva

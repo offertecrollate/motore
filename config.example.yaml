@@ -1,0 +1,113 @@
+# Copia questo file in config.yaml e metti i tuoi dati.
+# config.yaml contiene token e password: NON caricarlo su GitHub.
+
+database: prezzi.db
+
+# Storico prezzi Amazon da Keepa: SPENTO (a pagamento, da 49 €/mese).
+# Per attivarlo togli il # e metti la chiave.
+# keepa:
+#   api_key: "LA_TUA_CHIAVE_KEEPA"
+#   max_per_run: 50
+
+# ---------------------------------------------------------------
+# SITO: pagina iniziale con le due bandiere, poi una parte per paese.
+# Ogni paese ha le sue lingue e le sue sezioni per categoria di negozio.
+# In "sources" vanno i nomi delle fonti definite sotto in "countries".
+# Le fonti non assegnate finiscono in "Altri negozi".
+# ---------------------------------------------------------------
+site:
+  out_dir: site
+  hero_image: assets/hero.jpg
+  owner:                              # dati del titolare per la pagina privacy (DA CONFERMARE)
+    name: "[NOME E COGNOME]"
+    address: "[INDIRIZZO]"
+    email: "[EMAIL]"
+  chart_days: 90                # giorni mostrati nel grafico del prezzo
+  countries:
+    it:
+      langs: [it]
+      sections:
+        - id: amazon
+          name: {it: Amazon}
+          sources: [amazon_it]
+    ch:
+      langs: [it, de, fr]
+      sections:
+        - id: amazon
+          name: {it: Amazon, de: Amazon, fr: Amazon}
+          sources: [amazon_it, amazon_de, amazon_fr]
+        - id: elettronica
+          name: {it: Elettronica e informatica, de: Elektronik und Informatik, fr: Électronique et informatique}
+          sources: [awin_mediamarkt_ch]
+        - id: grandi-magazzini
+          name: {it: Grandi magazzini, de: Warenhäuser, fr: Grands magasins}
+          sources: [tradedoubler_galaxus_ch]
+
+countries:
+
+  # SVIZZERA -> canale WhatsApp: negozi svizzeri + Amazon.it, .de, .fr
+  ch:
+    rules:
+      history_days: 30        # giorni di storico per il prezzo di riferimento
+      min_history: 7          # giorni minimi prima di giudicare un prodotto
+      offer_pct: 30           # da -30% = offerta
+      error_pct: 60           # da -60% = errore di prezzo
+      min_price: 20           # ignora prodotti che di solito costano meno di 20
+      trust_old_price: false  # prezzo barrato del negozio: spesso gonfiato, meglio no
+      repost_after_days: 7
+      max_posts_per_run: 5
+    sources:
+      - name: awin_mediamarkt_ch
+        type: feed
+        preset: awin
+        url: "INCOLLA_QUI_URL_FEED_AWIN"
+      - name: tradedoubler_galaxus_ch
+        type: feed
+        preset: tradedoubler
+        shop: Galaxus
+        url: "INCOLLA_QUI_URL_FEED_TRADEDOUBLER"
+      - name: amazon_de
+        type: amazon_list
+        tag: "TUOTAG-21"                       # tag affiliato Amazon.de
+        file: data/amazon_de.csv
+      - name: amazon_it
+        type: amazon_list
+        tag: "TUOTAG-21"                       # tag affiliato Amazon.it (è un altro)
+        file: data/amazon_it_ch.csv            # prodotti Amazon.it che spediscono in Svizzera
+      - name: amazon_fr
+        type: amazon_list
+        tag: "TUOTAG-21"                       # tag affiliato Amazon.fr (iscrizione separata)
+        file: data/amazon_fr.csv
+    publishers:
+      - type: whatsapp_waha
+        post_tag: "#adv"            # avviso breve in fondo a ogni post
+        label: WhatsApp Svizzera
+        lang: it
+        base_url: http://localhost:3000
+        session: default
+        channel_id: "XXXXXXXX@newsletter"
+        api_key: "CAMBIAMI"
+
+  # ITALIA -> offerte pubblicate sul canale Telegram
+  it:
+    rules:
+      history_days: 30
+      min_history: 7
+      offer_pct: 30
+      error_pct: 60
+      min_price: 20
+      trust_old_price: false
+      repost_after_days: 7
+      max_posts_per_run: 5
+    sources:
+      - name: amazon_it
+        type: amazon_list
+        tag: "TUOTAG-21"
+        file: data/amazon_it.csv
+    publishers:
+      - type: telegram
+        post_tag: "#adv"
+        label: Telegram Italia
+        lang: it
+        bot_token: "TOKEN_BOT"
+        chat_id: "@nome_canale_italia"

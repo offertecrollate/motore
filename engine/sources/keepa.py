@@ -1,0 +1,187 @@
+"""Offerte Amazon da Keepa (servizio a pagamento che segue i prezzi Amazon).
+
+Usa l'elenco "deals" di Keepa: prodotti il cui prezzo è sceso rispetto alla media degli ultimi 90 giorni.
+Il "prezzo prima" (old_price) è la media a 90 giorni di Keepa, quindi lo sconto è reale e non il prezzo
+barrato del venditore. Il link porta ad Amazon con il codice affiliato.
+
+    - name: amazon_it         # il nome deve iniziare con "amazon": niente grafico né prezzo barrato (regole Amazon)
+      type: keepa
+      api_key: ${KEEPA_KEY}
+      domain: it                # it, de, fr
+      tag: offertecrolla-21     # codice affiliato di quel Paese
+      min_discount: 30          # sconto minimo sulla media a 90 giorni
+      min_price: 15             # prezzo minimo in euro (niente accessori da 2 euro)
+      pages: 2                  # pagine da 150 offerte (5 gettoni l'una)
+"""
+import json
+import logging
+import os
+import time
+from typing import List
+
+import requests
+
+from ..models import Product
+
+log = logging.getLogger(__name__)
+API = "https://api.keepa.com"
+DOMAINS = {"de": (3, "amazon.de"), "fr": (4, "amazon.fr"), "it": (8, "amazon.it")}
+PRICE_AMAZON, PRICE_NEW = 0, 1
+# categorie principali escluse: libri, Kindle, musica, film (prezzi "medi" poco affidabili e poco interesse)
+EXCLUDE = {"it": [411663031, 818937031, 412600031, 412606031, 433842031],
+           "de": [186606, 530484031, 255882, 284266],
+           "fr": [301061, 672108031, 301062, 405322]}          # tipi di prezzo Keepa: venduto da Amazon / nuovo da terzi
+
+
+def _eur(v):
+    return round(v / 100, 2) if isinstance(v, (int, float)) and v > 0 else None
+
+
+def _media(st: dict, campo: str):
+    """Prezzo medio del periodo (30/90/180 giorni) da Keepa: buy box, poi nuovo, poi Amazon."""
+    arr = st.get(campo) or []
+    for i in (18, 1, 0):
+        if i < len(arr) and isinstance(arr[i], (int, float)) and arr[i] > 0:
+            return arr[i] / 100
+    return None
+
+
+def _gonfiato(v: dict) -> bool:
+    """Prezzo alzato poco prima dello sconto per farlo sembrare un affare (decisione di Giuseppe del 15/11/2026).
+    - il prezzo di adesso non è davvero più basso di quello che costava di solito negli ultimi 6 mesi
+      (meno del 10% sotto la media 180 giorni, o 90 se il prodotto è più recente);
+    - oppure nell'ultimo mese il prezzo medio è salito di oltre il 20% rispetto ai 6 mesi: rialzo recente."""
+    bb, a30 = v.get("bb"), v.get("a30")
+    rif = v.get("a180") or v.get("a90")
+    if not bb or not rif:
+        return False
+    if bb > rif * 0.90:
+        return True
+    if a30 and a30 > rif * 1.20:
+        return True
+    return False
+
+
+class KeepaSource:
+    def __init__(self, cfg: dict):
+        self.cfg = cfg
+        self.key = str(cfg.get("api_key") or "").strip()
+
+    def fetch(self) -> List[Product]:
+        if not self.key or self.key.startswith("$"):
+            log.info("%s: chiave Keepa non ancora inserita, salto", self.cfg["name"])
+            return []
+        c = self.cfg
+        dom_id, site = DOMAINS[c.get("domain", "it")]
+        tag = c.get("tag", "")
+        out, seen = [], set()
+        for page in range(int(c.get("pages", 2))):
+            sel = {"page": page, "domainId": dom_id, "priceTypes": [PRICE_AMAZON],
+                   "deltaPercentRange": [int(c.get("min_discount", 30)), 100],
+                   "currentRange": [int(float(c.get("min_price", 15)) * 100), 1000000],
+                   "dateRange": 0, "isRangeEnabled": True, "isFilterEnabled": False,
+                   "filterErotic": True, "singleVariation": True, "sortType": 4,
+                   "isOutOfStock": False}
+            if c.get("quality", True):        # solo prodotti con recensioni, almeno 4 stelle, ben venduti
+                sel.update({"hasReviews": True, "minRating": int(c.get("min_rating", 40)),
+                            "salesRankRange": [1, int(c.get("max_sales_rank", 30000))]})
+            if c.get("exclude_media", True):  # libri, Kindle, musica, film
+                sel["excludeCategories"] = EXCLUDE.get(c.get("domain", "it"), [])
+            r = requests.get(f"{API}/deal", params={"key": self.key, "selection": json.dumps(sel)}, timeout=60)
+            if r.status_code == 429:
+                log.warning("%s: gettoni Keepa finiti per ora", c["name"])
+                break
+            r.raise_for_status()
+            data = r.json()
+            items = (data.get("deals") or {}).get("dr") or []
+            log.info("%s: pagina %d, %d offerte (gettoni rimasti %s)", c["name"], page, len(items), data.get("tokensLeft"))
+            for d in items:
+                asin = d.get("asin")
+                cur = d.get("current") or []
+                price = _eur(cur[PRICE_AMAZON]) if len(cur) > PRICE_AMAZON else None
+                avg = d.get("avg") or []
+                avg90 = _eur(avg[3][PRICE_AMAZON]) if len(avg) > 3 and len(avg[3]) > PRICE_AMAZON else None
+                if not asin or asin in seen or not price or not avg90 or avg90 <= price:
+                    continue
+                if c.get("exclude_media", True) and d.get("rootCat") in EXCLUDE.get(c.get("domain", "it"), []):
+                    continue
+                if (1 - price / avg90) * 100 > float(c.get("max_discount", 80)):   # oltre: di solito media gonfiata
+                    continue
+                seen.add(asin)
+                img = d.get("image")
+                if isinstance(img, list):     # Keepa dà il nome dell'immagine come lista di codici carattere
+                    img = "".join(chr(x) for x in img)
+                out.append(Product(
+                    source=c["name"], product_id=asin, name=(d.get("title") or asin)[:200],
+                    price=price, currency="EUR", shop=f"Amazon.{c.get('domain', 'it')}",
+                    url=f"https://www.{site}/dp/{asin}" + (f"?tag={tag}" if tag else ""),
+                    image=f"https://m.media-amazon.com/images/I/{img}" if img else None,
+                    old_price=avg90))
+            if len(items) < 150:
+                break
+        if c.get("amazon_prices", True):
+            out = self._prezzi_amazon(out, dom_id)
+        return out
+
+    def _prezzi_amazon(self, cands: List[Product], dom_id: int) -> List[Product]:
+        """Prezzi come li vede chi apre Amazon (decisione di Giuseppe del 15/11/2026): prezzo in vetrina
+        (buy box) e prezzo barrato mostrato da Amazon (saving basis: prezzo tipico/di listino/precedente).
+        Keepa serve solo per trovare i candidati e per il grafico. Senza prezzo barrato su Amazon niente offerta.
+        Costa 3 gettoni a prodotto: si controllano i più promettenti, con una cache di 1 ora condivisa
+        tra Svizzera e Italia nello stesso giro."""
+        c = self.cfg
+        path = c.get("cache_file", "keepa_prezzi.json")
+        try:
+            cache = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            cache = {}
+        now = time.time()
+        cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < 3600 and v.get("v") == 3}
+        cands = sorted(cands, key=lambda p: -(1 - p.price / p.old_price) if p.old_price else 0)
+        cands = cands[: int(c.get("max_check", 300))]
+        todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache]
+        for i in range(0, len(todo), 100):
+            chunk = todo[i:i + 100]
+            try:
+                r = requests.get(f"{API}/product", timeout=90, params={
+                    "key": self.key, "domain": dom_id, "asin": ",".join(chunk),
+                    "stats": 1, "buybox": 1, "history": 0})
+                if r.status_code == 429:
+                    log.warning("%s: gettoni Keepa finiti, controllo prezzi Amazon interrotto", c["name"])
+                    break
+                r.raise_for_status()
+                j = r.json()
+                log.info("%s: prezzi Amazon controllati %d (gettoni rimasti %s)", c["name"], len(chunk), j.get("tokensLeft"))
+                for pr in j.get("products") or []:
+                    st = pr.get("stats") or {}
+                    cache[f"{dom_id}:{pr.get('asin')}"] = {"t": now, "v": 3, "root": pr.get("rootCategory"), "bb": _eur(st.get("buyBoxPrice")),
+                                                           "a30": _media(st, "avg30"), "a90": _media(st, "avg90"),
+                                                           "a180": _media(st, "avg180"),
+                                                           "basis": _eur(st.get("buyBoxSavingBasis")),
+                                                           "tipo": st.get("buyBoxSavingBasisType")}
+            except Exception as e:
+                log.error("%s: controllo prezzi Amazon: %s", c["name"], e)
+                break
+        try:
+            json.dump(cache, open(path, "w", encoding="utf-8"))
+        except Exception:
+            pass
+        keep, mind, gonf, moda = [], float(c.get("min_discount", 30)), 0, 0
+        escluse = set(c.get("exclude_roots", []))   # Moda lasciata dentro (decisione di Giuseppe 16/11/2026)
+        for p in cands:
+            v = cache.get(f"{dom_id}:{p.product_id}")
+            if not v or not v.get("bb") or not v.get("basis") or v["basis"] <= v["bb"]:
+                continue
+            if (1 - v["bb"] / v["basis"]) * 100 < mind:
+                continue
+            if v.get("root") in escluse:      # Moda: prezzo crollato solo su una taglia, nell'app se ne vede un'altra
+                moda += 1
+                continue
+            if _gonfiato(v):
+                gonf += 1
+                continue
+            p.price, p.old_price = v["bb"], v["basis"]
+            keep.append(p)
+        log.info("%s: %d offerte con prezzo e prezzo barrato uguali ad Amazon (%d scartate: prezzo gonfiato poco prima; %d di moda/taglie)",
+                 c["name"], len(keep), gonf, moda)
+        return keep

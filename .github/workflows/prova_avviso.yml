@@ -1,0 +1,44 @@
+name: Prova avviso privato
+on:
+  workflow_dispatch:
+    inputs:
+      chiave:
+        description: "Chiave del prodotto (vuoto = mouse Acer)"
+        default: ""
+env:
+  DB_PASS: ${{ secrets.DB_PASS }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_ADDRESS: ${{ secrets.OWNER_ADDRESS }}
+  ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+  GITHUB_TOKEN: ${{ github.token }}
+
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Storico e sito
+        env:
+          SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
+        run: |
+          bash tools/dati.sh carica
+          git clone -q --depth 1 "https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/rinvio-it.git" site_it
+          git clone -q --depth 1 "https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/sito.git" site_ch
+      - name: Configurazione
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+        run: |
+          export TELEGRAM_TOKEN=$(printf %s "$TELEGRAM_TOKEN" | tr -d '[:space:]')
+          export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
+          export FB_PAGE_TOKEN=$(printf %s "$FB_PAGE_TOKEN" | tr -d '[:space:]')
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+      - run: python -m tools.prova_avviso ${{ inputs.chiave }}

@@ -1,0 +1,249 @@
+# Configurazione del motore su GitHub. I codici veri arrivano dai segreti (envsubst).
+database: prezzi.db
+site:
+  out_dir: site
+  domain: offertecrollate.ch
+  owner:
+    name: ${OWNER_NAME}         # segreto OWNER_NAME
+    address: ${OWNER_ADDRESS}   # segreto OWNER_ADDRESS
+    email: offertecrollate@gmail.com
+  hero_image: assets/hero.jpg
+  chart_days: 90
+  update_in_test: true   # in prova il sito si aggiorna lo stesso (i canali no)
+  countries:
+    it:
+      domain: offertecrollate.it
+      out_dir: site_it
+      langs:
+      - it
+      sections:
+      - id: tech
+        name:
+          it: Informatica
+        sources:
+        - awin_acer_it
+    ch:
+      domain: offertecrollate.ch
+      out_dir: site_ch
+      langs:
+      - it
+      - de
+      - fr
+      sections: []
+countries:
+  ch:
+    rules:
+      max_site_only: 600
+      history_days: 30
+      min_history: 7
+      offer_pct: 30
+      error_pct: 80     # "errore di prezzo" solo da -80% (decisione di Giuseppe)
+      min_price: 20
+      trust_old_price: false
+      repost_after_days: 30
+      max_posts_per_run: 18     # 15-20 per sito a giro, divise tra i negozi (15/11/2026)
+    sources:
+    - name: awin_sodeal_ch
+      type: feed
+      preset: awin
+      currency: CHF
+      publish: false
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: '84531'
+    - name: google_natkina_ch
+      type: feed
+      preset: google
+      currency: CHF
+      publish: false
+      shop: Natkina
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: F4313
+    - name: shopify_natkina_ch
+      type: shopify
+      url: https://natkina.com
+      shop: Natkina
+      currency: CHF
+      max_pages: 20
+      min_discount: 30
+      site_only: true
+    # Amazon.it anche sul sito svizzero (Amazon.it spedisce in Svizzera molti prodotti): solo sito, con l'avviso
+    # "controlla la spedizione in Svizzera nel carrello"; sui canali escono già dalla parte italiana
+    - name: amazon_it
+      type: keepa
+      api_key: ${KEEPA_KEY}
+      domain: it
+      tag: offertecrolla-21
+      min_discount: 30
+      min_price: 1
+      quality: false          # niente filtro su stelle e vendite (decisione 15/11/2026)
+      exclude_media: false    # anche libri, Kindle, musica e film
+      max_discount: 95        # anche i possibili errori sopra l'80%
+      max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
+      pages: 4                # tante offerte Amazon sul sito (decisione 15/11/2026): 600 candidati, 20 gettoni
+      site_only: true
+      site_old_price: true
+      max_site: 350
+    # Sedusia CH (Awin 19024, negozio per adulti): categoria "Adulti 18+" con conferma età, fuori da Google,
+    # mai su Facebook, su Telegram con immagine neutra "18+" (decisione di Giuseppe del 14/11/2026)
+    - name: awin_sedusia_ch
+      type: feed
+      preset: awin
+      currency: CHF
+      shop: Sedusia
+      adult: true
+      site_old_price: true
+      min_discount: 30
+      max_site: 40
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_advertiser_id: '19024'
+    # Electrolux CH (Awin 31407): accessori, pulizia e ricambi
+    - name: awin_electrolux_ch
+      type: feed
+      preset: awin
+      currency: CHF
+      shop: Electrolux
+      site_old_price: true
+      min_discount: 15
+      max_site: 60
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_advertiser_id: '31407'
+    publishers:
+    - type: facebook_page
+      post_tag: '#ADV'
+      label: Facebook Svizzera
+      site_url: https://offertecrollate.ch
+      lang: it
+      page_id: '1402093839660293'
+      page_token: ${FB_PAGE_TOKEN}
+  it:
+    rules:
+      max_site_only: 800
+      history_days: 30
+      min_history: 7
+      offer_pct: 30
+      error_pct: 80     # "errore di prezzo" solo da -80% (decisione di Giuseppe)
+      min_price: 20
+      trust_old_price: false
+      repost_after_days: 30
+      max_posts_per_run: 18     # 15-20 per sito a giro, divise tra i negozi (15/11/2026)
+    sources:
+    - name: awin_acer_it
+      type: feed
+      site_old_price: true    # sul sito anche i prodotti scontati dal negozio (link affiliati)
+      min_discount: 15
+      preset: awin
+      currency: EUR
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: '27937'
+    - name: awin_akko_it
+      type: feed
+      preset: awin
+      currency: EUR
+      publish: false
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: '94599'
+    - name: awin_plusshop_it
+      type: feed
+      preset: awin
+      currency: EUR
+      publish: false
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: '116362'
+    - name: awin_bazta_it
+      type: feed
+      preset: awin
+      currency: EUR
+      publish: false
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: '116198'
+    - name: google_onestreet_it
+      type: feed
+      preset: google
+      currency: EUR
+      publish: false
+      shop: OneStreet
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: F4199
+    - name: google_yesshop_it
+      type: feed
+      preset: google
+      currency: EUR
+      publish: false
+      shop: yesshop
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: F2498
+    - name: google_celebre_it
+      type: feed
+      preset: google
+      currency: EUR
+      publish: false
+      shop: Celebre Store
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_feed_id: F564
+    - name: shopify_onestreet_it
+      type: shopify
+      url: https://onestreet.it
+      shop: Onestreet
+      awin_mid: 128805       # approvato su Awin il 15/11/2026
+      currency: EUR
+      max_pages: 20
+      min_discount: 30
+      site_only: true
+    - name: shopify_yesshop_it
+      type: shopify
+      url: https://www.yesshoponline.it
+      shop: Yes Shop
+      currency: EUR
+      max_pages: 20
+      min_discount: 30
+      site_only: true
+    - name: shopify_celebre_it
+      type: shopify
+      url: https://celebrestore.com
+      shop: Celebre Store
+      awin_mid: 118201       # approvato su Awin il 15/11/2026
+      currency: EUR
+      max_pages: 20
+      min_discount: 30
+      site_only: true
+    # Amazon.it via Keepa (abbonamento di Giuseppe dal 15/11/2026): sconto sulla media a 90 giorni
+    - name: amazon_it
+      type: keepa
+      api_key: ${KEEPA_KEY}
+      domain: it
+      tag: offertecrolla-21
+      min_discount: 30
+      min_price: 1
+      quality: false          # niente filtro su stelle e vendite (decisione 15/11/2026)
+      exclude_media: false    # anche libri, Kindle, musica e film
+      max_discount: 95        # anche i possibili errori sopra l'80%
+      max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
+      pages: 6                # tante offerte Amazon sul sito (decisione 15/11/2026): 900 candidati, 30 gettoni
+      trust_old_price: true
+      site_old_price: true    # sul sito anche le altre offerte Amazon del giorno (non solo le 5 pubblicate)
+      max_site: 500
+    publishers:
+    - type: facebook_page
+      post_tag: '#ADV'
+      label: Facebook Italia
+      site_url: https://offertecrollate.it
+      lang: it
+      page_id: '1402093839660293'
+      page_token: ${FB_PAGE_TOKEN}
+    - type: telegram
+      post_tag: '#ADV'
+      label: Telegram Italia
+      site_url: https://offertecrollate.it
+      lang: it
+      bot_token: ${TELEGRAM_TOKEN}
+      chat_id: '@offertecrollate'
+keep_days: 100
+# Keepa (abbonamento API di Giuseppe): storico prezzi Amazon dei prodotti nuovi, 1 gettone per prodotto,
+# così grafico sul sito e calcolo dello sconto partono subito con 90 giorni di prezzi veri
+keepa:
+  api_key: ${KEEPA_KEY}
+  max_per_run: 80
+avvisi_privati:
+  chat_id: '${ALERT_CHAT_ID}'   # segreto ALERT_CHAT_ID
+  soglia: 80        # nel bot solo i possibili errori di prezzo da -80% in su
+  bot_token: ${TELEGRAM_TOKEN}

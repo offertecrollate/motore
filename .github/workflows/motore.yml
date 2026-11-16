@@ -1,0 +1,103 @@
+name: Motore offerte
+
+# FASE DI PROVA (PROVA "1"): ogni 2 ore raccoglie i prezzi e aggiorna i due siti, ma NON pubblica su Telegram e Facebook.
+# Per accendere anche i canali: PROVA: "0".
+on:
+  schedule:
+    # ogni 2 ore alle ore pari di Roma (inverno UTC+1): 14:00, 16:00, ...
+    - cron: "0 1-23/2 * * *"
+  workflow_dispatch: {}
+
+env:
+  DB_PASS: ${{ secrets.DB_PASS }}
+  OWNER_NAME: ${{ secrets.OWNER_NAME }}
+  OWNER_ADDRESS: ${{ secrets.OWNER_ADDRESS }}
+  ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+  GITHUB_TOKEN: ${{ github.token }}
+  PROVA: "0"
+
+concurrency:
+  group: motore
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  controlla:
+    # Se un giro è stato lanciato a mano da poco (meno di 75 minuti), il giro programmato successivo salta:
+    # così dopo un giro anticipato il ritmo resta ogni 2 ore.
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      salta: ${{ steps.c.outputs.salta }}
+    steps:
+      - id: c
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          salta=false
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            t=$(gh run list -R ${{ github.repository }} -w motore.yml -e workflow_dispatch -L 1 --json createdAt -q '.[0].createdAt')
+            if [ -n "$t" ] && [ $(( $(date -u +%s) - $(date -u -d "$t" +%s) )) -lt 4500 ]; then salta=true; fi
+          fi
+          echo "salta=$salta" >> $GITHUB_OUTPUT; echo "salta=$salta"
+  run:
+    needs: controlla
+    if: needs.controlla.outputs.salta != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Recupera lo storico prezzi (ramo "dati")
+        run: |
+          bash tools/dati.sh carica
+
+      - name: Configurazione (i segreti restano in GitHub)
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+        run: |
+          export TELEGRAM_TOKEN=$(printf %s "$TELEGRAM_TOKEN" | tr -d '[:space:]')
+          export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
+          export FB_PAGE_TOKEN=$(printf %s "$FB_PAGE_TOKEN" | tr -d '[:space:]')
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+
+      - name: Scarica i due siti (le offerte già pubblicate restano)
+        env:
+          SITE_TOKEN: ${{ secrets.SITE_TOKEN }}
+        run: |
+          git clone -q --depth 1 https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/sito.git site_ch
+          git clone -q --depth 1 https://x-access-token:${SITE_TOKEN}@github.com/offertecrollate/rinvio-it.git site_it
+
+      - name: Svizzera
+        run: python -m engine.run --country ch $([ "$PROVA" = "1" ] && echo --dry-run)
+
+      - name: Italia
+        run: python -m engine.run --country it $([ "$PROVA" = "1" ] && echo --dry-run)
+
+      - name: Pubblica i siti (offertecrollate.ch e offertecrollate.it)
+        run: |
+          for d in site_ch site_it; do
+            ( cd $d
+              git config user.name "Offerte Crollate"
+              git config user.email "offertecrollate@gmail.com"
+              git add -A
+              git diff --cached --quiet || (git commit -qm "Offerte aggiornate" && git push -q) )
+          done
+
+      - name: Salva lo storico prezzi (ramo "dati", un solo file)
+        if: always()
+        run: |
+          bash tools/dati.sh salva
