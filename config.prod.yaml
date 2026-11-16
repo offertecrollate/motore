@@ -33,7 +33,7 @@ site:
 countries:
   ch:
     rules:
-      max_site_only: 600
+      max_site_only: 5000     # in pratica nessun limite
       history_days: 30
       min_history: 7
       offer_pct: 30
@@ -118,7 +118,7 @@ countries:
       page_token: ${FB_PAGE_TOKEN}
   it:
     rules:
-      max_site_only: 800
+      max_site_only: 5000     # in pratica nessun limite
       history_days: 30
       min_history: 7
       offer_pct: 30
