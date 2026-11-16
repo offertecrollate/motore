@@ -1,0 +1,18 @@
+name: Video giornaliero (TikTok / Reel)
+on:
+  schedule:
+    - cron: "13 17 * * *"   # ogni giorno alle 18:13 di Roma (inverno)
+  workflow_dispatch: {}
+jobs:
+  video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install requests pillow numpy
+      - name: Offerte del sito italiano
+        run: curl -sfL https://offertecrollate.it/deals.json -o deals.json || git clone -q --depth 1 https://github.com/offertecrollate/rinvio-it.git s && cp s/deals.json deals.json
+      - env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          ALERT_CHAT_ID: ${{ secrets.ALERT_CHAT_ID }}
+        run: python tools/video_giornaliero.py deals.json
