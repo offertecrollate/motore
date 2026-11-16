@@ -22,6 +22,30 @@ from .sources import build_source
 log = logging.getLogger("errori-prezzo")
 
 
+def _prezzi_amazon_attuali(keys, cfg, massimo=40):
+    """Prezzo in vetrina oggi su Amazon (buy box Keepa) per le offerte pubblicate non uscite in questo giro.
+    Ritorna {key: prezzo} (None = non disponibile). Le chiavi non controllate non compaiono."""
+    import requests
+    api = str(cfg.get("keepa", {}).get("api_key") or "")
+    amz = [k for k in keys if k.startswith("amazon")][:massimo]
+    if not amz or not api or api.startswith("$"):
+        return {}
+    out = {}
+    try:
+        r = requests.get("https://api.keepa.com/product", timeout=120, params={
+            "key": api.strip(), "domain": 8, "asin": ",".join(k.split(":", 1)[1] for k in amz),
+            "stats": 1, "buybox": 1, "history": 0})
+        for p in r.json().get("products") or []:
+            bb = (p.get("stats") or {}).get("buyBoxPrice")
+            for k in amz:
+                if k.endswith(":" + p.get("asin", "")):
+                    out[k] = bb / 100 if bb and bb > 0 else None
+        log.info("Amazon: ricontrollati %d prezzi di offerte pubblicate", len(out))
+    except Exception as e:
+        log.warning("Ricontrollo prezzi Amazon non riuscito (nessuna offerta chiusa): %s", e)
+    return out
+
+
 def close_ended(db, products, country, publishers, cfg, c, tolerance=0.03):
     """Ricontrolla i post degli ultimi giorni. Un'offerta è terminata se il prezzo di oggi è salito
     oltre il prezzo pubblicato (+3%) oppure se il prodotto non è più nel catalogo di una fonte
@@ -30,10 +54,25 @@ def close_ended(db, products, country, publishers, cfg, c, tolerance=0.03):
     shops_ok = {p.shop for p in products}          # negozi che oggi hanno risposto
     by_label = {p.label: p for p in publishers}
     ended = set()
-    for m in db.open_messages(country, days=c["rules"].get("watch_days", 14)):
+    msgs = list(db.open_messages(country, days=c["rules"].get("watch_days", 14)))
+    # Amazon e AliExpress si leggono a ricerche: se un prodotto non esce in questo giro NON vuol dire che
+    # l'offerta è finita (errore visto il 16/11/2026: Blink ancora a 66,99 € segnata terminata).
+    # Per Amazon si ricontrolla il prezzo vero su Keepa; AliExpress si chiude solo se il prezzo sale.
+    a_cercare = {s["name"] for s in c["sources"] if s.get("type") in ("keepa", "aliexpress")}
+    da_verificare = [m["key"] for m in msgs if m["key"] not in now and m["key"].split(":")[0] in a_cercare]
+    verificati = _prezzi_amazon_attuali(da_verificare, cfg) if da_verificare else {}
+    for m in msgs:
         price = now.get(m["key"])
-        row = db.conn.execute("SELECT shop FROM products WHERE key=?", (m["key"],)).fetchone()
-        gone = price is None and row is not None and row[0] in shops_ok
+        if price is None and m["key"] in verificati:
+            price = verificati[m["key"]]          # None = non più in vendita
+            if price is None:
+                gone = True
+            else:
+                gone = False
+        else:
+            row = db.conn.execute("SELECT shop FROM products WHERE key=?", (m["key"],)).fetchone()
+            gone = (price is None and row is not None and row[0] in shops_ok
+                    and m["key"].split(":")[0] not in a_cercare)
         up = price is not None and price > m["price"] * (1 + tolerance)
         if not (gone or up):
             continue
