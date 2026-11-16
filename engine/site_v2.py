@@ -424,6 +424,8 @@ label.search .sbtn.ovb{border-radius:20px;min-height:40px}
 .ovqb{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
 .ovqb a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:#e30613;color:#fff;font-weight:700;text-decoration:none}
 .ovq small{color:#666}
+@media(max-width:700px){.xbar .search,.xbar form.search,label.search{flex-wrap:wrap;height:auto!important}
+.sbtn.ovb{order:3;flex:1 1 100%;width:100%!important;justify-content:center;border-radius:10px!important;min-height:42px;margin-top:6px}}
 .hic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:50px;padding:0 6px;border-radius:8px;color:#fff !important;text-decoration:none;font-size:11px;font-weight:400}
 .hic:hover{background:#1f1f1f}.hic.tg svg{color:#2aa6e0}.hic.fb svg{color:#3b82f6}.hic svg{width:22px;height:22px;flex:none}
 .hic .flagsvg{width:24px;height:24px;border-radius:4px}
@@ -788,9 +790,9 @@ RFJS = ("var ocT=Date.now();function ocRefresh(){var u=new URL(location.href);u.
 
 # "Cerca ovunque": cerca la parola nei negozi affiliati (link affiliato) anche se l'offerta non è sul sito
 # (richiesta di Giuseppe del 16/11/2026)
-OVQ_LBL = {"it": ("Ovunque", 'Cerca «%s» nei negozi partner', "Si apre il sito del negozio · link affiliati #ADV"),
-           "de": ("Überall", "«%s» bei unseren Partnershops suchen", "Öffnet den Shop · Affiliate-Links #ADV"),
-           "fr": ("Partout", "Chercher «%s» chez nos partenaires", "Ouvre le site du magasin · liens affiliés #ADV")}
+OVQ_LBL = {"it": ("Cerca su Amazon e negozi", 'Cerca «%s» nei negozi partner', "Si apre il sito del negozio · link affiliati #ADV"),
+           "de": ("Bei Amazon & Shops suchen", "«%s» bei unseren Partnershops suchen", "Öffnet den Shop · Affiliate-Links #ADV"),
+           "fr": ("Chercher sur Amazon & boutiques", "Chercher «%s» chez nos partenaires", "Ouvre le site du magasin · liens affiliés #ADV")}
 _AW = "https://www.awin1.com/cread.php?awinmid=%d&awinaffid=3152592&clickref=cerca&ued="
 OVQ_SHOPS = {
     "it": [["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""],
