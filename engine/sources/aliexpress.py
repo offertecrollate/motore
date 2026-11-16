@@ -76,8 +76,22 @@ class AliExpressSource:
                                       ship_to_country=c.get("country", "IT"),
                                       tracking_id=self.tracking, sort="LAST_VOLUME_DESC")
                 except Exception as e:
-                    log.warning("%s: ricerca '%s' non riuscita: %s", c["name"], kw, e)
-                    break
+                    if "frequency" in str(e).lower():      # troppe richieste: aspetta e riprova una volta
+                        time.sleep(3)
+                        try:
+                            data = self._call("aliexpress.affiliate.product.query", keywords=kw, page_no=page,
+                                              page_size=50, fields=FIELDS, target_currency=c.get("currency", "EUR"),
+                                              target_language=c.get("language", "IT"),
+                                              ship_to_country=c.get("country", "IT"),
+                                              tracking_id=self.tracking, sort="LAST_VOLUME_DESC")
+                            e = None
+                        except Exception as e2:
+                            e = e2
+                    if e is None:
+                        pass
+                    else:
+                        log.warning("%s: ricerca '%s' non riuscita: %s", c["name"], kw, e)
+                        break
                 res = (data.get("aliexpress_affiliate_product_query_response", {})
                        .get("resp_result", {}).get("result", {}))
                 items = (res.get("products") or {}).get("product") or []
@@ -98,5 +112,5 @@ class AliExpressSource:
                         price=price, currency=c.get("currency", "EUR"), shop="AliExpress",
                         url=link, image=it.get("product_main_image_url"), old_price=old,
                         category=it.get("first_level_category_name")))
-                time.sleep(0.3)
+                time.sleep(1.2)
         return out
