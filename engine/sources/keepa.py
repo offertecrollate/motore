@@ -75,6 +75,27 @@ class KeepaSource:
         dom_id, site = DOMAINS[c.get("domain", "it")]
         tag = c.get("tag", "")
         out, seen = [], set()
+        # 1) prima le categorie che su Amazon vendono di più (decisione di Giuseppe del 16/11/2026):
+        #    elettronica, PS5 e giochi, smartphone, iPad, monitor, TV grandi, carta igienica, merendine…
+        #    solo prodotti molto venduti (classifica vendite alta), così niente "cazzate".
+        for f in c.get("focus", []):
+            sel = {"page": 0, "domainId": dom_id, "priceTypes": [PRICE_AMAZON],
+                   "deltaPercentRange": [int(f.get("min_discount", c.get("min_discount", 30))), 100],
+                   "currentRange": [int(float(f.get("min_price", 1)) * 100), 1000000],
+                   "dateRange": 1, "isRangeEnabled": True, "isFilterEnabled": False, "filterErotic": True,
+                   "singleVariation": True, "sortType": 4, "isOutOfStock": False,
+                   "includeCategories": f["cats"], "salesRankRange": [1, int(f.get("max_rank", 20000))]}
+            try:
+                r = requests.get(f"{API}/deal", params={"key": self.key, "selection": json.dumps(sel)}, timeout=60)
+                if r.status_code == 429:
+                    log.warning("%s: gettoni Keepa finiti per ora", c["name"]); break
+                items = ((r.json().get("deals") or {}).get("dr") or [])
+            except Exception as e:
+                log.warning("%s: categoria %s non letta: %s", c["name"], f.get("name"), e); continue
+            n0 = len(out)
+            self._aggiungi(items, out, seen, site, tag, dom_id, focus=True)
+            log.info("%s: categoria %s, %d candidati", c["name"], f.get("name"), len(out) - n0)
+        # 2) poi tutte le altre offerte
         for page in range(int(c.get("pages", 2))):
             sel = {"page": page, "domainId": dom_id, "priceTypes": [PRICE_AMAZON],
                    "deltaPercentRange": [int(c.get("min_discount", 30)), 100],
@@ -95,33 +116,39 @@ class KeepaSource:
             data = r.json()
             items = (data.get("deals") or {}).get("dr") or []
             log.info("%s: pagina %d, %d offerte (gettoni rimasti %s)", c["name"], page, len(items), data.get("tokensLeft"))
-            for d in items:
-                asin = d.get("asin")
-                cur = d.get("current") or []
-                price = _eur(cur[PRICE_AMAZON]) if len(cur) > PRICE_AMAZON else None
-                avg = d.get("avg") or []
-                avg90 = _eur(avg[3][PRICE_AMAZON]) if len(avg) > 3 and len(avg[3]) > PRICE_AMAZON else None
-                if not asin or asin in seen or not price or not avg90 or avg90 <= price:
-                    continue
-                if c.get("exclude_media", True) and d.get("rootCat") in EXCLUDE.get(c.get("domain", "it"), []):
-                    continue
-                if (1 - price / avg90) * 100 > float(c.get("max_discount", 80)):   # oltre: di solito media gonfiata
-                    continue
-                seen.add(asin)
-                img = d.get("image")
-                if isinstance(img, list):     # Keepa dà il nome dell'immagine come lista di codici carattere
-                    img = "".join(chr(x) for x in img)
-                out.append(Product(
-                    source=c["name"], product_id=asin, name=(d.get("title") or asin)[:200],
-                    price=price, currency="EUR", shop=f"Amazon.{c.get('domain', 'it')}",
-                    url=f"https://www.{site}/dp/{asin}" + (f"?tag={tag}" if tag else ""),
-                    image=f"https://m.media-amazon.com/images/I/{img}" if img else None,
-                    old_price=avg90))
+            self._aggiungi(items, out, seen, site, tag, dom_id)
             if len(items) < 150:
                 break
         if c.get("amazon_prices", True):
             out = self._prezzi_amazon(out, dom_id)
         return out
+
+    def _aggiungi(self, items, out, seen, site, tag, dom_id, focus=False):
+        c = self.cfg
+        for d in items:
+            asin = d.get("asin")
+            cur = d.get("current") or []
+            price = _eur(cur[PRICE_AMAZON]) if len(cur) > PRICE_AMAZON else None
+            avg = d.get("avg") or []
+            avg90 = _eur(avg[3][PRICE_AMAZON]) if len(avg) > 3 and len(avg[3]) > PRICE_AMAZON else None
+            if not asin or asin in seen or not price or not avg90 or avg90 <= price:
+                continue
+            if c.get("exclude_media", True) and d.get("rootCat") in EXCLUDE.get(c.get("domain", "it"), []):
+                continue
+            if (1 - price / avg90) * 100 > float(c.get("max_discount", 80)):   # oltre: di solito media gonfiata
+                continue
+            seen.add(asin)
+            img = d.get("image")
+            if isinstance(img, list):     # Keepa dà il nome dell'immagine come lista di codici carattere
+                img = "".join(chr(x) for x in img)
+            out.append(Product(
+                source=c["name"], product_id=asin, name=(d.get("title") or asin)[:200],
+                price=price, currency="EUR", shop=f"Amazon.{c.get('domain', 'it')}",
+                url=f"https://www.{site}/dp/{asin}" + (f"?tag={tag}" if tag else ""),
+                image=f"https://m.media-amazon.com/images/I/{img}" if img else None,
+                old_price=avg90))
+            if focus:
+                out[-1].focus = True
 
     def _prezzi_amazon(self, cands: List[Product], dom_id: int) -> List[Product]:
         """Prezzi come li vede chi apre Amazon (decisione di Giuseppe del 15/11/2026): prezzo in vetrina
@@ -137,7 +164,8 @@ class KeepaSource:
             cache = {}
         now = time.time()
         cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < 3600 and v.get("v") == 3}
-        cands = sorted(cands, key=lambda p: -(1 - p.price / p.old_price) if p.old_price else 0)
+        cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False),
+                                             -(1 - p.price / p.old_price) if p.old_price else 0))
         cands = cands[: int(c.get("max_check", 300))]
         todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache]
         for i in range(0, len(todo), 100):

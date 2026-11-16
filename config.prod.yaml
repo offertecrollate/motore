@@ -90,7 +90,17 @@ countries:
       tag: offertecrolla-21
       min_discount: 30
       min_price: 1
-      quality: false          # niente filtro su stelle e vendite (decisione 15/11/2026)
+      quality: true           # 16/11: troppe "cazzate" -> solo prodotti con buone recensioni e venduti
+      max_sales_rank: 50000
+      min_rating: 38
+      # categorie che vendono di più su Amazon (decisione di Giuseppe 16/11/2026), solo prodotti molto venduti
+      focus:
+        - {name: elettronica e TV, cats: [412609031], max_rank: 15000}
+        - {name: informatica iPad monitor, cats: [425916031], max_rank: 15000}
+        - {name: PS5 e videogiochi, cats: [412603031], max_rank: 10000}
+        - {name: alimentari merendine carta igienica, cats: [6198082031], max_rank: 10000, min_discount: 25}
+        - {name: casa e cucina, cats: [524015031], max_rank: 8000}
+        - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
       max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
@@ -255,7 +265,17 @@ countries:
       tag: offertecrolla-21
       min_discount: 30
       min_price: 1
-      quality: false          # niente filtro su stelle e vendite (decisione 15/11/2026)
+      quality: true           # 16/11: troppe "cazzate" -> solo prodotti con buone recensioni e venduti
+      max_sales_rank: 50000
+      min_rating: 38
+      # categorie che vendono di più su Amazon (decisione di Giuseppe 16/11/2026), solo prodotti molto venduti
+      focus:
+        - {name: elettronica e TV, cats: [412609031], max_rank: 15000}
+        - {name: informatica iPad monitor, cats: [425916031], max_rank: 15000}
+        - {name: PS5 e videogiochi, cats: [412603031], max_rank: 10000}
+        - {name: alimentari merendine carta igienica, cats: [6198082031], max_rank: 10000, min_discount: 25}
+        - {name: casa e cucina, cats: [524015031], max_rank: 8000}
+        - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
       max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
