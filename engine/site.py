@@ -518,7 +518,9 @@ def update_site(deals: List[Deal], country: str, site: dict, keep: int = 0, repl
         if it["key"] not in seen:
             seen.add(it["key"])
             items.append(it)
-    items = items[:keep or int(site.get("max_items", 2000))]   # prima il tetto fisso era 400
+    tetto = keep or int(site.get("max_items", 0))   # 0 = nessun limite (decisione di Giuseppe 16/11/2026)
+    if tetto:
+        items = items[:tetto]
     with open(data_path, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=1)
 
