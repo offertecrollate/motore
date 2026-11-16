@@ -83,7 +83,7 @@ class KeepaSource:
                    "deltaPercentRange": [int(f.get("min_discount", c.get("min_discount", 30))), 100],
                    "currentRange": [int(float(f.get("min_price", 1)) * 100), 1000000],
                    "dateRange": 1, "isRangeEnabled": True, "isFilterEnabled": False, "filterErotic": True,
-                   "singleVariation": True, "sortType": 4, "isOutOfStock": False,
+                   "singleVariation": True, "sortType": 3, "isOutOfStock": False,
                    "includeCategories": f["cats"], "salesRankRange": [1, int(f.get("max_rank", 20000))]}
             try:
                 r = requests.get(f"{API}/deal", params={"key": self.key, "selection": json.dumps(sel)}, timeout=60)
@@ -149,6 +149,10 @@ class KeepaSource:
                 old_price=avg90))
             if focus:
                 out[-1].focus = True
+            try:      # classifica vendite Amazon (più basso = più venduto)
+                out[-1].rank = cur[3] if len(cur) > 3 and cur[3] and cur[3] > 0 else 10 ** 9
+            except Exception:
+                out[-1].rank = 10 ** 9
 
     def _prezzi_amazon(self, cands: List[Product], dom_id: int) -> List[Product]:
         """Prezzi come li vede chi apre Amazon (decisione di Giuseppe del 15/11/2026): prezzo in vetrina
@@ -164,8 +168,8 @@ class KeepaSource:
             cache = {}
         now = time.time()
         cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < 3600 and v.get("v") == 3}
-        cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False),
-                                             -(1 - p.price / p.old_price) if p.old_price else 0))
+        # prima i più venduti (decisione di Giuseppe del 16/11/2026): classifica vendite Amazon più alta
+        cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False), getattr(p, "rank", 10 ** 9)))
         cands = cands[: int(c.get("max_check", 300))]
         todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache]
         for i in range(0, len(todo), 100):
