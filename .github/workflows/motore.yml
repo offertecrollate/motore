@@ -68,11 +68,13 @@ jobs:
           AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
           KEEPA_KEY: ${{ secrets.KEEPA_KEY }}
+          ALI_APP_KEY: ${{ secrets.ALIEXPRESS_APP_KEY }}
+          ALI_APP_SECRET: ${{ secrets.ALIEXPRESS_APP_SECRET }}
         run: |
           export TELEGRAM_TOKEN=$(printf %s "$TELEGRAM_TOKEN" | tr -d '[:space:]')
           export AWIN_FEED_KEY=$(printf %s "$AWIN_FEED_KEY" | tr -d '[:space:]')
           export FB_PAGE_TOKEN=$(printf %s "$FB_PAGE_TOKEN" | tr -d '[:space:]')
-          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
+          envsubst '${TELEGRAM_TOKEN} ${AWIN_FEED_KEY} ${FB_PAGE_TOKEN} ${KEEPA_KEY} ${ALI_APP_KEY} ${ALI_APP_SECRET} ${OWNER_NAME} ${OWNER_ADDRESS} ${ALERT_CHAT_ID}' < config.prod.yaml > config.yaml
 
       - name: Scarica i due siti (le offerte già pubblicate restano)
         env:

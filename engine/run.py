@@ -106,7 +106,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         deals = [d for d in deals if d.product.source not in site_only]
 
     # negozi "solo sito" che ci hanno approvato (link affiliato Awin): anche su Telegram e Facebook
-    affiliati = {s["name"] for s in c["sources"] if s.get("site_only") and s.get("awin_mid")}
+    affiliati = {s["name"] for s in c["sources"] if (s.get("site_only") and s.get("awin_mid")) or s.get("affiliate")}
     deals = deals + [d for d in site_deals if d.product.source in affiliati]
     deals.sort(key=lambda d: -d.discount_pct)     # le più forti prima (decisione 15/11/2026)
 
@@ -124,18 +124,9 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
             continue
         nomi.add(nome)
         nuove.append(d)
-    per_negozio = {}
-    for d in nuove:                       # già in ordine di sconto
-        per_negozio.setdefault(d.product.shop or d.product.source, []).append(d)
-    code = list(per_negozio.values())
-    fresh, massimo = [], c["rules"].get("max_posts_per_run", 5)
-    while code and len(fresh) < massimo:
-        for q in list(code):
-            if len(fresh) >= massimo:
-                break
-            fresh.append(q.pop(0))
-            if not q:
-                code.remove(q)
+    # Telegram e Facebook: solo le offerte più forti di tutti i negozi affiliati (decisione di Giuseppe 16/11/2026)
+    nuove.sort(key=lambda d: (d.level != "errore", -d.discount_pct))
+    fresh = nuove[: c["rules"].get("max_posts_per_run", 5)]
     fresh.sort(key=lambda d: -d.discount_pct)
     log.info("%s: %d ribassi trovati, %d da pubblicare", country, len(deals), len(fresh))
 
@@ -199,7 +190,10 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     #    in prova: non manda nulla sui canali, mostra solo le offerte.
     #    sul sito vanno TUTTE le offerte valide (anche quelle non pubblicate sui canali in questo giro)
     site_list, visti = [], set()
+    minimo_sito = float(c["rules"].get("site_min_pct", 30))   # sul sito tutte le offerte dal 30% in su
     for d in fresh + deals + site_deals:
+        if d.discount_pct < minimo_sito:
+            continue
         if d.product.key not in visti:
             visti.add(d.product.key)
             site_list.append(d)

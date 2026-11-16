@@ -41,9 +41,23 @@ countries:
       min_price: 20
       trust_old_price: false
       repost_after_days: 30
-      max_posts_per_run: 15     # giro ogni ora: fino a 15 per sito, divise tra i negozi
+      max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
+      site_min_pct: 30          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
+    - name: aliexpress_ch
+      type: aliexpress
+      app_key: ${ALI_APP_KEY}
+      app_secret: ${ALI_APP_SECRET}
+      tracking_id: offertecrollate
+      country: CH
+      currency: CHF
+      language: IT
+      min_discount: 30
+      pages: 2
+      site_old_price: true    # sul sito subito, con il prezzo pieno dichiarato da AliExpress
+      affiliate: true         # link affiliato: anche su Telegram e Facebook
+      keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
     - name: awin_sodeal_ch
       type: feed
       preset: awin
@@ -126,9 +140,23 @@ countries:
       min_price: 20
       trust_old_price: false
       repost_after_days: 30
-      max_posts_per_run: 15     # giro ogni ora: fino a 15 per sito, divise tra i negozi
+      max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
+      site_min_pct: 30          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
+    - name: aliexpress_it
+      type: aliexpress
+      app_key: ${ALI_APP_KEY}
+      app_secret: ${ALI_APP_SECRET}
+      tracking_id: offertecrollate
+      country: IT
+      currency: EUR
+      language: IT
+      min_discount: 30
+      pages: 2
+      site_old_price: true    # sul sito subito, con il prezzo pieno dichiarato da AliExpress
+      affiliate: true         # link affiliato: anche su Telegram e Facebook
+      keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
     - name: awin_acer_it
       type: feed
       site_old_price: true    # sul sito anche i prodotti scontati dal negozio (link affiliati)
