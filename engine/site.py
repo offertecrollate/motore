@@ -494,7 +494,7 @@ def country_dir(site: dict, country: str) -> str:
     return ccfg.get("out_dir") or os.path.join(site.get("out_dir", "site"), country)
 
 
-def update_site(deals: List[Deal], country: str, site: dict, keep: int = 400, replace_sources=()) -> None:
+def update_site(deals: List[Deal], country: str, site: dict, keep: int = 0, replace_sources=()) -> None:
     ccfg = site["countries"][country]
     out_dir = country_dir(site, country)
     os.makedirs(out_dir, exist_ok=True)
@@ -518,7 +518,7 @@ def update_site(deals: List[Deal], country: str, site: dict, keep: int = 400, re
         if it["key"] not in seen:
             seen.add(it["key"])
             items.append(it)
-    items = items[:keep]
+    items = items[:keep or int(site.get("max_items", 2000))]   # prima il tetto fisso era 400
     with open(data_path, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=1)
 

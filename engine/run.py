@@ -197,7 +197,12 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
 
     # 5. sito (ogni offerta porta con sé lo storico prezzi per il grafico). Il sito si aggiorna anche
     #    in prova: non manda nulla sui canali, mostra solo le offerte.
-    site_list = fresh + site_deals
+    #    sul sito vanno TUTTE le offerte valide (anche quelle non pubblicate sui canali in questo giro)
+    site_list, visti = [], set()
+    for d in fresh + deals + site_deals:
+        if d.product.key not in visti:
+            visti.add(d.product.key)
+            site_list.append(d)
     for d in site_list:
         d.extra["history"] = db.series(d.product.key, days=cfg.get("site", {}).get("chart_days", 90))
     if (site_list or site_only or site_deals) and cfg.get("site") and (not dry_run or cfg["site"].get("update_in_test", True)):
