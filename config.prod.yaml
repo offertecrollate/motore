@@ -101,6 +101,7 @@ countries:
         - {name: alimentari merendine carta igienica, cats: [6198082031], max_rank: 10000, min_discount: 25}
         - {name: casa e cucina, cats: [524015031], max_rank: 8000}
         - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
+        - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
       max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
@@ -276,6 +277,7 @@ countries:
         - {name: alimentari merendine carta igienica, cats: [6198082031], max_rank: 10000, min_discount: 25}
         - {name: casa e cucina, cats: [524015031], max_rank: 8000}
         - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
+        - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
       max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
