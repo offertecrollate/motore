@@ -157,6 +157,17 @@ countries:
       site_old_price: true    # sul sito subito, con il prezzo pieno dichiarato da AliExpress
       affiliate: true         # link affiliato: anche su Telegram e Facebook
       keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
+    # Maxi Sport IT (Awin 9923): sport, scarpe e abbigliamento, approvato il 15/11/2026
+    - name: awin_maxisport_it
+      type: feed
+      preset: awin
+      currency: EUR
+      shop: Maxi Sport
+      site_old_price: true
+      min_discount: 30
+      max_site: 1000
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_advertiser_id: '9923'
     - name: awin_acer_it
       type: feed
       site_old_price: true    # sul sito anche i prodotti scontati dal negozio (link affiliati)
