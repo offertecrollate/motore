@@ -1,20 +1,33 @@
-"""Diagnosi: prezzi Amazon pubblicati sbagliati? Confronta i dati Keepa normali con quelli aggiornati adesso."""
-import datetime as dt, os, requests
+"""Prodotti di elettronica più venduti su Amazon.it in offerta adesso (per il video promozionale).
+Prezzo e prezzo barrato come li mostra Amazon (buy box + saving basis)."""
+import json, os, requests
 key = os.environ["KEEPA_KEY"].strip()
-asins = "B0DT1KFV52,B0FH123LLC,B0B6B2JDCF,B0FFLXCMJ8,B0FV8MW74F,B09492RD6C,B0DJC9ZXCG,B0FBGR4LRT,B0CZS9JJT6,1472277546"
-def t(m):
-    return (dt.datetime(2011, 1, 1) + dt.timedelta(minutes=m)).strftime("%d/%m %H:%M") if m and m > 0 else "-"
-for extra in ({}, {"update": 0}):
-    r = requests.get("https://api.keepa.com/product", timeout=120,
-                     params=dict(key=key, domain=8, asin=asins, history=0, stats=1, buybox=1, **extra))
-    j = r.json()
-    print("PARAMS", extra, "gettoni usati", j.get("tokensConsumed"), "rimasti", j.get("tokensLeft"), j.get("error"))
+API = "https://api.keepa.com"
+cand = []
+for cat in (412609031, 425916031):          # Elettronica, Informatica
+    for page in range(2):
+        sel = {"page": page, "domainId": 8, "priceTypes": [0], "deltaPercentRange": [15, 100],
+               "currentRange": [1500, 300000], "includeCategories": [cat], "salesRankRange": [1, 3000],
+               "isRangeEnabled": True, "singleVariation": True, "sortType": 3, "isOutOfStock": False,
+               "hasReviews": True, "minRating": 40, "filterErotic": True, "dateRange": 1}
+        j = requests.get(f"{API}/deal", params={"key": key, "selection": json.dumps(sel)}, timeout=60).json()
+        dr = (j.get("deals") or {}).get("dr") or []
+        print("cat", cat, "pagina", page, len(dr), "gettoni", j.get("tokensLeft"))
+        cand += [d["asin"] for d in dr]
+cand = list(dict.fromkeys(cand))[:60]
+out = []
+for i in range(0, len(cand), 30):
+    j = requests.get(f"{API}/product", timeout=120, params={"key": key, "domain": 8, "asin": ",".join(cand[i:i+30]),
+                     "stats": 1, "buybox": 1, "history": 0, "rating": 1}).json()
+    print("prodotti", len(j.get("products") or []), "gettoni", j.get("tokensLeft"))
     for p in j.get("products") or []:
         s = p.get("stats") or {}
-        cur = s.get("current") or []
-        g = lambda i: cur[i] if i < len(cur) else None
-        print(" ", p.get("asin"), "agg", t(p.get("lastUpdate")), "camb", t(p.get("lastPriceChange")),
-              "bb", s.get("buyBoxPrice"), "basis", s.get("buyBoxSavingBasis"), s.get("buyBoxSavingBasisType"),
-              "amz", g(0), "nuovo", g(1), "bbcur", g(18), "list", g(4),
-              "venditore", s.get("buyBoxSellerId"), "amazon?", s.get("buyBoxIsAmazon"),
-              "fba?", s.get("buyBoxIsFBA"), "padre", p.get("parentAsin"), "tipo", p.get("productType"))
+        bb, basis = s.get("buyBoxPrice"), s.get("buyBoxSavingBasis")
+        imgs = (p.get("imagesCSV") or "").split(",")
+        rank = (s.get("current") or [None]*4)[3]
+        if bb and basis and basis > bb > 0 and imgs[0]:
+            out.append({"asin": p["asin"], "title": p.get("title"), "price": bb/100, "ref": basis/100,
+                        "pct": round((1-bb/basis)*100), "img": "https://m.media-amazon.com/images/I/" + imgs[0],
+                        "rank": rank, "brand": p.get("brand")})
+out.sort(key=lambda x: (x["rank"] or 10**9))
+print("RISULTATO_JSON " + json.dumps(out, ensure_ascii=False))
