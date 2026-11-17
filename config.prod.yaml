@@ -104,6 +104,7 @@ countries:
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramell, max_rank: 30000, min_discount: 25}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bevand, max_rank: 30000, min_discount: 25}
         - {name: caffè e capsule, post_pct: 40, cats: [6198082031], title: caff, max_rank: 30000, min_discount: 25}
+        - {name: robot tagliaerba, cats: [635016031], title: tagliaerba, max_rank: 50000, min_discount: 25}
         - {name: casa e cucina, cats: [524015031], max_rank: 8000}
         - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
@@ -298,6 +299,7 @@ countries:
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramell, max_rank: 30000, min_discount: 25}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bevand, max_rank: 30000, min_discount: 25}
         - {name: caffè e capsule, post_pct: 40, cats: [6198082031], title: caff, max_rank: 30000, min_discount: 25}
+        - {name: robot tagliaerba, cats: [635016031], title: tagliaerba, max_rank: 50000, min_discount: 25}
         - {name: casa e cucina, cats: [524015031], max_rank: 8000}
         - {name: salute e cura persona, cats: [1571289031], max_rank: 8000}
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}

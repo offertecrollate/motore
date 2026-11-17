@@ -153,7 +153,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     #    né due prodotti con lo stesso nome nello stesso giro; solo i migliori N per giro
     #    15-20 per sito a ogni giro, divise tra i negozi a turno (decisione di Giuseppe del 15/11/2026):
     #    a ogni turno la più forte di ciascun negozio, partendo dal negozio con lo sconto più alto
-    nuove, nomi = [], set()
+    nuove, nomi, riserva = [], set(), []
     for d in deals:
         nome = (d.product.name or "").strip().lower()
         if nome in nomi:
@@ -163,6 +163,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
             continue
         soglia = getattr(d.product, "post_pct", None) or float(c["rules"].get("min_post_pct", 70))
         if d.level != "errore" and d.discount_pct < soglia:
+            riserva.append(d)  # se il giro resta vuoto si pubblicano comunque le più alte
             continue          # 17/11/2026: sui canali solo offerte fortissime ed errori di prezzo
         nomi.add(nome)
         nuove.append(d)
@@ -183,6 +184,26 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
                 continue
             ali += 1
         fresh.append(d)
+    # 17/11/2026: se sopra soglia non c'è niente (o quasi), si pubblicano comunque le più alte disponibili
+    minimo = int(c["rules"].get("min_posts_fill", 5))
+    if len(fresh) < minimo:
+        riserva.sort(key=lambda d: (not d.product.source.startswith("amazon"), -d.discount_pct))
+        for d in riserva:
+            if len(fresh) >= minimo:
+                break
+            nome = (d.product.name or "").strip().lower()
+            if nome in nomi:
+                continue
+            if (d.product.shop or "").lower().startswith("onestreet"):
+                if ones >= c["rules"].get("max_onestreet_per_run", 2):
+                    continue
+                ones += 1
+            if d.product.source.startswith("aliexpress"):
+                if ali >= c["rules"].get("max_aliexpress_per_run", 3):
+                    continue
+                ali += 1
+            nomi.add(nome)
+            fresh.append(d)
     fresh.sort(key=lambda d: -d.discount_pct)
     log.info("%s: %d ribassi trovati, %d da pubblicare", country, len(deals), len(fresh))
 
