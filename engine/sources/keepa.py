@@ -96,7 +96,7 @@ class KeepaSource:
                 log.warning("%s: categoria %s non letta: %s", c["name"], f.get("name"), e); continue
             n0 = len(out)
             prima = len(out)
-            self._aggiungi(items, out, seen, site, tag, dom_id, focus=True)
+            self._aggiungi(items, out, seen, site, tag, dom_id, focus=True, gruppo=f.get("name", ""))
             if f.get("post_pct"):          # soglia diversa per Telegram/Facebook
                 for p in out[prima:]:
                     p.post_pct = float(f["post_pct"])
@@ -129,7 +129,7 @@ class KeepaSource:
             out = self._prezzi_amazon(out, dom_id)
         return out
 
-    def _aggiungi(self, items, out, seen, site, tag, dom_id, focus=False):
+    def _aggiungi(self, items, out, seen, site, tag, dom_id, focus=False, gruppo=""):
         c = self.cfg
         for d in items:
             asin = d.get("asin")
@@ -155,6 +155,7 @@ class KeepaSource:
                 old_price=avg90))
             if focus:
                 out[-1].focus = True
+                out[-1].gruppo = gruppo
             try:      # classifica vendite Amazon (più basso = più venduto)
                 out[-1].rank = cur[3] if len(cur) > 3 and cur[3] and cur[3] > 0 else 10 ** 9
             except Exception:
