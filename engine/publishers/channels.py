@@ -105,6 +105,17 @@ class WhatsAppWahaPublisher(_Base):
         r.raise_for_status()
 
 
+def _grassetto(riga: str) -> str:
+    """Lettere in grassetto Unicode (Facebook non ha il grassetto). Hashtag e link restano normali."""
+    def b(ch):
+        o = ord(ch)
+        if 65 <= o <= 90: return chr(0x1D5D4 + o - 65)
+        if 97 <= o <= 122: return chr(0x1D5EE + o - 97)
+        if 48 <= o <= 57: return chr(0x1D7EC + o - 48)
+        return ch
+    return " ".join(w if w.startswith(("#", "http")) else "".join(b(c) for c in w) for w in riga.split(" "))
+
+
 class FacebookPagePublisher(_Base):
     """Pagina Facebook tramite Graph API ufficiale.
     cfg: page_id, page_token (token della pagina, senza scadenza), api_version (facoltativo).
@@ -130,6 +141,8 @@ class FacebookPagePublisher(_Base):
     def send(self, deal: Deal) -> None:
         base = f"https://graph.facebook.com/{self.cfg.get('api_version', 'v27.0')}/{self.cfg['page_id']}"
         text = fb_text(deal, self.lang, self.cfg.get('post_tag', ''))
+        righe = text.split("\n")            # prime 2 righe in grassetto (quelle visibili nell'anteprima)
+        text = "\n".join([_grassetto(r) for r in righe[:2]] + righe[2:])
         if not self.cfg.get("link_comment", True):     # senza commento il link va nel testo
             text += f"\n\n👉 {deal.product.url}"
         if self.cfg.get("site_url"):   # riga fissa che porta a tutte le offerte del paese
