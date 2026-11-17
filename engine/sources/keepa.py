@@ -100,7 +100,7 @@ class KeepaSource:
             if f.get("post_pct"):          # soglia diversa per Telegram/Facebook
                 for p in out[prima:]:
                     p.post_pct = float(f["post_pct"])
-            log.info("%s: categoria %s, %d candidati", c["name"], f.get("name"), len(out) - n0)
+            log.info("%s: categoria %s, %d candidati (%d trovati da Keepa)", c["name"], f.get("name"), len(out) - n0, len(items))
         # 2) poi tutte le altre offerte
         for page in range(int(c.get("pages", 2))):
             sel = {"page": page, "domainId": dom_id, "priceTypes": [PRICE_AMAZON],
