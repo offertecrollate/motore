@@ -42,7 +42,8 @@ countries:
       trust_old_price: false
       repost_after_days: 30
       max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
-      site_min_pct: 30          # sito: tutte le offerte dal 30% in su
+      site_min_pct: 30
+      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
     - name: aliexpress_ch
@@ -156,7 +157,8 @@ countries:
       trust_old_price: false
       repost_after_days: 30
       max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
-      site_min_pct: 30          # sito: tutte le offerte dal 30% in su
+      site_min_pct: 30
+      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
     - name: aliexpress_it
