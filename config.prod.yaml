@@ -184,6 +184,7 @@ countries:
       max_site: 1000
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '9450'
+      affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     - name: awin_maxisport_it
       type: feed
       preset: awin
@@ -194,6 +195,7 @@ countries:
       max_site: 1000
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '9923'
+      affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     - name: awin_acer_it
       type: feed
       site_old_price: true    # sul sito anche i prodotti scontati dal negozio (link affiliati)
