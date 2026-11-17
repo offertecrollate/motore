@@ -161,6 +161,8 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         if any(db.already_posted(d.product.key, paese, d.product.price, c["rules"].get("repost_after_days", 7))
                for paese in ("it", "ch")):
             continue
+        if d.level != "errore" and d.discount_pct < float(c["rules"].get("min_post_pct", 70)):
+            continue          # 17/11/2026: sui canali solo offerte fortissime ed errori di prezzo
         nomi.add(nome)
         nuove.append(d)
     # Telegram e Facebook: solo le offerte più forti di tutti i negozi affiliati (decisione di Giuseppe 16/11/2026)
