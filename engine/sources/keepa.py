@@ -85,6 +85,8 @@ class KeepaSource:
                    "dateRange": 1, "isRangeEnabled": True, "isFilterEnabled": False, "filterErotic": True,
                    "singleVariation": True, "sortType": 3, "isOutOfStock": False,
                    "includeCategories": f["cats"], "salesRankRange": [1, int(f.get("max_rank", 20000))]}
+            if f.get("title"):
+                sel["titleSearch"] = f["title"]      # parola nel titolo (es. cioccolatini)
             try:
                 r = requests.get(f"{API}/deal", params={"key": self.key, "selection": json.dumps(sel)}, timeout=60)
                 if r.status_code == 429:
