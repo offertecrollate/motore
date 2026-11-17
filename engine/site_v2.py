@@ -814,7 +814,8 @@ OVQ_SHOPS = {
     "it": [["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""],
            ["Onestreet", _AW % 128805, "https://onestreet.it/search?q="],
            ["Celebre Store", _AW % 118201, "https://celebrestore.com/search?q="],
-           ["Acer Store", _AW % 15530, "https://store.acer.com/it-it/catalogsearch/result/?q="]],
+           ["Acer Store", _AW % 15530, "https://store.acer.com/it-it/catalogsearch/result/?q="],
+           ["Moulinex", _AW % 9450, "https://www.moulinex.it/search?text="]],
     "ch": [["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""]],
 }
 OVQJS = ("function ocOvqUrl(s,q){return s[2]?s[1]+encodeURIComponent(s[2]+encodeURIComponent(q)):s[1]+encodeURIComponent(q);}"

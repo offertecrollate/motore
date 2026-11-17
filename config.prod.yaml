@@ -169,6 +169,17 @@ countries:
       affiliate: true         # link affiliato: anche su Telegram e Facebook
       keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
     # Maxi Sport IT (Awin 9923): sport, scarpe e abbigliamento, approvato il 15/11/2026
+    # Moulinex IT (Awin 9450): piccoli elettrodomestici da cucina, attivo dal 13/11/2026
+    - name: awin_moulinex_it
+      type: feed
+      preset: awin
+      currency: EUR
+      shop: Moulinex
+      site_old_price: true
+      min_discount: 30
+      max_site: 1000
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_advertiser_id: '9450'
     - name: awin_maxisport_it
       type: feed
       preset: awin
