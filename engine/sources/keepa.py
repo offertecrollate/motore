@@ -95,7 +95,11 @@ class KeepaSource:
             except Exception as e:
                 log.warning("%s: categoria %s non letta: %s", c["name"], f.get("name"), e); continue
             n0 = len(out)
+            prima = len(out)
             self._aggiungi(items, out, seen, site, tag, dom_id, focus=True)
+            if f.get("post_pct"):          # soglia diversa per Telegram/Facebook
+                for p in out[prima:]:
+                    p.post_pct = float(f["post_pct"])
             log.info("%s: categoria %s, %d candidati", c["name"], f.get("name"), len(out) - n0)
         # 2) poi tutte le altre offerte
         for page in range(int(c.get("pages", 2))):
