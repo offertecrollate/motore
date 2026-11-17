@@ -206,6 +206,23 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
                 ali += 1
             nomi.add(nome)
             fresh.append(d)
+    # 17/11/2026: almeno 2-3 Amazon per giro (le più scontate), anche sotto soglia
+    min_amz = int(c["rules"].get("min_amazon_per_run", 3))
+    amz = sum(1 for d in fresh if d.product.source.startswith("amazon"))
+    if amz < min_amz:
+        extra = sorted([d for d in riserva if d.product.source.startswith("amazon")
+                        and (d.product.name or "").strip().lower() not in nomi
+                        and d.discount_pct >= float(c["rules"].get("min_amazon_pct", 30))],
+                       key=lambda d: -d.discount_pct)[:min_amz - amz]
+        massimo = c["rules"].get("max_posts_per_run", 5)
+        for d in extra:
+            if len(fresh) >= massimo:   # fa posto togliendo l'offerta non-Amazon più debole
+                altri = [x for x in fresh if not x.product.source.startswith("amazon") and x.level != "errore"]
+                if not altri:
+                    break
+                fresh.remove(min(altri, key=lambda x: x.discount_pct))
+            nomi.add((d.product.name or "").strip().lower())
+            fresh.append(d)
     fresh.sort(key=lambda d: -d.discount_pct)
     log.info("%s: %d ribassi trovati, %d da pubblicare", country, len(deals), len(fresh))
 
