@@ -142,7 +142,7 @@ class FacebookPagePublisher(_Base):
         base = f"https://graph.facebook.com/{self.cfg.get('api_version', 'v27.0')}/{self.cfg['page_id']}"
         text = fb_text(deal, self.lang, self.cfg.get('post_tag', ''))
         righe = text.split("\n")            # prime 2 righe in grassetto (quelle visibili nell'anteprima)
-        text = "\n".join([_grassetto(r) for r in righe[:2]] + righe[2:])
+        text = "\n".join([_grassetto(r.upper()) for r in righe[:2]] + righe[2:])
         if not self.cfg.get("link_comment", True):     # senza commento il link va nel testo
             text += f"\n\n👉 {deal.product.url}"
         if self.cfg.get("site_url"):   # riga fissa che porta a tutte le offerte del paese
