@@ -424,6 +424,22 @@ label.search .sbtn.ovb{border-radius:20px;min-height:40px}
 .ovqb{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
 .ovqb a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:10px;background:#e30613;color:#fff;font-weight:700;text-decoration:none}
 .ovq small{color:#666}
+/* 17/11/2026: testata mobile più pulita e professionale */
+@media(max-width:700px){
+ .xbar{padding:10px 12px 12px;gap:10px 6px}
+ .xbar .brand img{height:34px}
+ .here{font-size:11px;opacity:.85}.here .flagsvg{width:20px;height:14px}
+ .hicons{gap:2px}.hic{min-width:36px;min-height:36px;padding:0 2px}.hic svg{width:22px;height:22px}
+ .hic.sw span,.hic.rf span{display:none!important}
+ .hic.sw .flagsvg,.hic.sw svg{width:24px;height:24px;border-radius:5px}
+ .xbar .search{order:3;flex:1 1 100%;min-height:46px;border-radius:12px;box-shadow:0 1px 0 rgba(255,255,255,.06);padding-left:14px;flex-wrap:wrap}
+ .xbar .search input{font-size:16px}
+ .xbar .search .sbtn:not(.ovb){width:46px;min-height:46px;border-radius:0 12px 12px 0}
+ .sbtn.ovb{order:4;flex:1 1 100%;margin:0!important;min-height:38px!important;border-radius:0 0 12px 12px!important;background:#f3f3f3!important;color:#111!important;font-size:13px!important;font-weight:600;border-top:1px solid #e6e6e6!important;margin-left:-14px!important;width:calc(100% + 14px)!important}
+ .sbtn.ovb svg{width:16px;height:16px;color:#e30613}
+ .chips{gap:6px;padding:2px 0}
+ .chips button{min-height:32px!important;padding:0 9px!important;border-radius:999px!important;font-size:13px!important;font-weight:600;flex:0 0 auto!important;box-shadow:none!important}
+}
 @media(max-width:700px){.xbar .search,.xbar form.search,label.search{flex-wrap:wrap;height:auto!important}
 .sbtn.ovb{order:3;flex:1 1 100%;width:100%!important;justify-content:center;border-radius:10px!important;min-height:42px;margin-top:6px}}
 .hic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:50px;padding:0 6px;border-radius:8px;color:#fff !important;text-decoration:none;font-size:11px;font-weight:400}
