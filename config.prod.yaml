@@ -193,6 +193,7 @@ countries:
       preset: awin
       currency: EUR
       shop: Maxi Sport
+      post_pct: 70           # Telegram/Facebook solo dal 70%; sul sito dal 30%
       site_old_price: true
       min_discount: 30
       max_site: 1000

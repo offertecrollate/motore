@@ -161,7 +161,9 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         if any(db.already_posted(d.product.key, paese, d.product.price, c["rules"].get("repost_after_days", 7))
                for paese in ("it", "ch")):
             continue
-        soglia = getattr(d.product, "post_pct", None) or float(c["rules"].get("min_post_pct", 70))
+        soglia = (getattr(d.product, "post_pct", None)
+                  or next((s.get("post_pct") for s in c["sources"] if s["name"] == d.product.source and s.get("post_pct")), None)
+                  or float(c["rules"].get("min_post_pct", 70)))
         if d.level != "errore" and d.discount_pct < soglia:
             riserva.append(d)  # se il giro resta vuoto si pubblicano comunque le più alte
             continue          # 17/11/2026: sui canali solo offerte fortissime ed errori di prezzo
