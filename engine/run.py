@@ -164,12 +164,17 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         nomi.add(nome)
         nuove.append(d)
     # Telegram e Facebook: solo le offerte più forti di tutti i negozi affiliati (decisione di Giuseppe 16/11/2026)
-    nuove.sort(key=lambda d: (d.level != "errore", -d.discount_pct))
+    # 17/11/2026: più Amazon (prima nell'ordine), Onestreet al massimo 2 per giro
+    nuove.sort(key=lambda d: (d.level != "errore", not d.product.source.startswith("amazon"), -d.discount_pct))
     # AliExpress: al massimo 3 per giro (link lunghi; decisione di Giuseppe del 16/11/2026)
-    fresh, ali = [], 0
+    fresh, ali, ones = [], 0, 0
     for d in nuove:
         if len(fresh) >= c["rules"].get("max_posts_per_run", 5):
             break
+        if (d.product.shop or "").lower().startswith("onestreet"):
+            if ones >= c["rules"].get("max_onestreet_per_run", 2):
+                continue
+            ones += 1
         if d.product.source.startswith("aliexpress"):
             if ali >= c["rules"].get("max_aliexpress_per_run", 3):
                 continue
