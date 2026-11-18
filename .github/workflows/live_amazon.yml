@@ -1,0 +1,24 @@
+name: Programma live Amazon
+on:
+  workflow_dispatch:
+    inputs:
+      q: {description: "prodotto da provare", default: "cuffie bluetooth"}
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tools/live_amazon/prova.py "${{ inputs.q }}"
+        env: {KEEPA_KEY: "${{ secrets.KEEPA_KEY }}"}
+      - uses: actions/upload-artifact@v4
+        with: {name: risultato, path: risultato.json}
+  exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pyinstaller
+      - run: pyinstaller --onefile --console --name OfferteCrollate-Live tools/live_amazon/live_amazon.py
+      - uses: actions/upload-artifact@v4
+        with: {name: OfferteCrollate-Live, path: dist/OfferteCrollate-Live.exe}
