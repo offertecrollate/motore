@@ -121,6 +121,22 @@ countries:
         - {name: BF dentifricio, cats: [1571289031], title: dentifricio, max_rank: 30000, min_discount: 30}
         - {name: BF detersivi, cats: [1571289031], title: detersivo, max_rank: 30000, min_discount: 30}
         - {name: BF deodoranti, cats: [1571289031], title: deodorante, max_rank: 30000, min_discount: 30}
+        - {name: marca Apple, cats: [412609031, 425916031], title: apple, max_rank: 60000, min_discount: 20}
+        - {name: marca Samsung, cats: [412609031, 425916031], title: samsung, max_rank: 60000, min_discount: 20}
+        - {name: marca Sony, cats: [412609031, 412603031], title: sony, max_rank: 60000, min_discount: 20}
+        - {name: marca Dyson, cats: [524015031, 1571289031], title: dyson, max_rank: 60000, min_discount: 20}
+        - {name: marca De'Longhi, cats: [524015031], title: delonghi, max_rank: 60000, min_discount: 20}
+        - {name: marca Philips, cats: [524015031, 1571289031, 412609031], title: philips, max_rank: 60000, min_discount: 20}
+        - {name: marca Xiaomi, cats: [412609031, 524015031], title: xiaomi, max_rank: 60000, min_discount: 20}
+        - {name: marca Bose, cats: [412609031], title: bose, max_rank: 60000, min_discount: 20}
+        - {name: marca JBL, cats: [412609031], title: jbl, max_rank: 60000, min_discount: 20}
+        - {name: marca Nintendo, cats: [412603031], title: nintendo, max_rank: 60000, min_discount: 20}
+        - {name: marca Logitech, cats: [425916031, 412603031], title: logitech, max_rank: 60000, min_discount: 20}
+        - {name: marca Oral-B, cats: [1571289031], title: oral, max_rank: 60000, min_discount: 20}
+        - {name: marca Braun, cats: [1571289031], title: braun, max_rank: 60000, min_discount: 20}
+        - {name: marca iRobot Roomba, cats: [524015031], title: roomba, max_rank: 60000, min_discount: 20}
+        - {name: marca Lenovo, cats: [425916031], title: lenovo, max_rank: 60000, min_discount: 20}
+        - {name: marca Garmin, cats: [412609031], title: garmin, max_rank: 60000, min_discount: 20}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}
@@ -341,6 +357,22 @@ countries:
         - {name: BF dentifricio, cats: [1571289031], title: dentifricio, max_rank: 30000, min_discount: 30}
         - {name: BF detersivi, cats: [1571289031], title: detersivo, max_rank: 30000, min_discount: 30}
         - {name: BF deodoranti, cats: [1571289031], title: deodorante, max_rank: 30000, min_discount: 30}
+        - {name: marca Apple, cats: [412609031, 425916031], title: apple, max_rank: 60000, min_discount: 20}
+        - {name: marca Samsung, cats: [412609031, 425916031], title: samsung, max_rank: 60000, min_discount: 20}
+        - {name: marca Sony, cats: [412609031, 412603031], title: sony, max_rank: 60000, min_discount: 20}
+        - {name: marca Dyson, cats: [524015031, 1571289031], title: dyson, max_rank: 60000, min_discount: 20}
+        - {name: marca De'Longhi, cats: [524015031], title: delonghi, max_rank: 60000, min_discount: 20}
+        - {name: marca Philips, cats: [524015031, 1571289031, 412609031], title: philips, max_rank: 60000, min_discount: 20}
+        - {name: marca Xiaomi, cats: [412609031, 524015031], title: xiaomi, max_rank: 60000, min_discount: 20}
+        - {name: marca Bose, cats: [412609031], title: bose, max_rank: 60000, min_discount: 20}
+        - {name: marca JBL, cats: [412609031], title: jbl, max_rank: 60000, min_discount: 20}
+        - {name: marca Nintendo, cats: [412603031], title: nintendo, max_rank: 60000, min_discount: 20}
+        - {name: marca Logitech, cats: [425916031, 412603031], title: logitech, max_rank: 60000, min_discount: 20}
+        - {name: marca Oral-B, cats: [1571289031], title: oral, max_rank: 60000, min_discount: 20}
+        - {name: marca Braun, cats: [1571289031], title: braun, max_rank: 60000, min_discount: 20}
+        - {name: marca iRobot Roomba, cats: [524015031], title: roomba, max_rank: 60000, min_discount: 20}
+        - {name: marca Lenovo, cats: [425916031], title: lenovo, max_rank: 60000, min_discount: 20}
+        - {name: marca Garmin, cats: [412609031], title: garmin, max_rank: 60000, min_discount: 20}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}

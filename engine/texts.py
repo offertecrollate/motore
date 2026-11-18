@@ -40,6 +40,13 @@ FRETTA = {"it": "⚠️ Possibile errore di prezzo: affrettati, potrebbe sparire
           "fr": "⚠️ Possible erreur de prix : dépêche-toi, elle peut disparaître à tout moment !"}
 
 
+def _stella(nome: str) -> str:
+    """⭐ APPLE · davanti ai marchi famosi (18/11/2026)."""
+    from .brands import brand_of
+    b = brand_of(nome)
+    return f"⭐ {b.upper()} · " if b else ""
+
+
 def fretta(deal: Deal, lang: str) -> str:
     """Riga di avviso per gli sconti sopra l'80% (non su Amazon, dove non c'è il confronto)."""
     if deal.product.source.startswith("amazon") or round(deal.discount_pct or 0) <= 80:
@@ -75,9 +82,9 @@ def post_text(deal: Deal, lang: str, tag: str = "") -> str:
     off = f"{t[deal.level]}" if (amz and not keepa) else f"{t[deal.level]} -{deal.discount_pct:.0f}%"
     if frase:
         apertura = " ".join(x for x in (tag, deal.extra.get("flags", ""), frase) if x)
-        righe = [apertura, f"{off} | {p.name}"]
+        righe = [apertura, f"{_stella(p.name)}{off} | {p.name}"]
     else:
-        righe = [f"{head} | {p.name}"]
+        righe = [f"{_stella(p.name)}{head} | {p.name}"]
     if fretta(deal, lang):
         righe.append(fretta(deal, lang))
     righe += [price, f"🏬 {t['su']} {p.shop}"]
@@ -94,7 +101,7 @@ def fb_text(deal: Deal, lang: str, tag: str = "") -> str:
     if deal.level == "errore":
         first = f"{pre}{t['errore']}: {p.name} a -{deal.discount_pct:.0f}%!"
     else:
-        first = f"{pre}🔥 {p.name} a -{deal.discount_pct:.0f}%!"
+        first = f"{pre}{_stella(p.name) or '🔥 '}{p.name} a -{deal.discount_pct:.0f}%!"
     if h:      # frase simpatica subito accanto a #ADV e bandiera, poi prodotto e sconto
         lines = [f"{pre}{h}", first[len(pre):]]
     else:

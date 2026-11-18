@@ -179,7 +179,9 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         nuove.append(d)
     # Telegram e Facebook: solo le offerte più forti di tutti i negozi affiliati (decisione di Giuseppe 16/11/2026)
     # 17/11/2026: più Amazon (prima nell'ordine), Onestreet al massimo 2 per giro
-    nuove.sort(key=lambda d: (d.level != "errore", not d.product.source.startswith("amazon"), -d.discount_pct))
+    from .brands import brand_of   # 18/11/2026: prima i marchi famosi (Apple, Samsung, Sony…)
+    nuove.sort(key=lambda d: (d.level != "errore", not brand_of(d.product.name),
+                              not d.product.source.startswith("amazon"), -d.discount_pct))
     # AliExpress: al massimo 3 per giro (link lunghi; decisione di Giuseppe del 16/11/2026)
     fresh, ali, ones = [], 0, 0
     for d in nuove:
@@ -218,10 +220,11 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     min_amz = int(c["rules"].get("bf_min_amazon_per_run" if _black_friday(c) else "min_amazon_per_run", 3))
     amz = sum(1 for d in fresh if d.product.source.startswith("amazon"))
     if amz < min_amz:
+        from .brands import brand_of
         extra = sorted([d for d in riserva if d.product.source.startswith("amazon")
                         and (d.product.name or "").strip().lower() not in nomi
                         and d.discount_pct >= float(c["rules"].get("min_amazon_pct", 30))],
-                       key=lambda d: -d.discount_pct)[:min_amz - amz]
+                       key=lambda d: (not brand_of(d.product.name), -d.discount_pct))[:min_amz - amz]
         massimo = c["rules"].get("max_posts_per_run", 5)
         for d in extra:
             if len(fresh) >= massimo:   # fa posto togliendo l'offerta non-Amazon più debole
