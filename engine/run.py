@@ -25,7 +25,8 @@ log = logging.getLogger("errori-prezzo")
 def _black_friday(c) -> bool:
     """Settimana del Black Friday Amazon: dal 19/11 al 30/11/2026 (rules.bf_dal / bf_al)."""
     import datetime as _dt
-    oggi = _dt.date.today().isoformat()
+    from zoneinfo import ZoneInfo
+    oggi = _dt.datetime.now(ZoneInfo("Europe/Rome")).date().isoformat()   # il server è in UTC
     return str(c["rules"].get("bf_dal", "9999")) <= oggi <= str(c["rules"].get("bf_al", "0000"))
 
 def _prezzi_amazon_attuali(keys, cfg, massimo=40):
