@@ -55,6 +55,17 @@ def _v(arr, i):
         return None
 
 
+def breve(f: str) -> str:
+    """Titolo corto di una caratteristica: «【Batteria 40 ore】 …» o «BATTERIA 40 ORE: …» → «Batteria 40 ore»."""
+    import re
+    m = re.search(r"【([^】]{3,60})】", f)
+    t = m.group(1) if m else re.split(r"[:：.;]", f, 1)[0]
+    t = re.sub(r"[^\w\s%,/+'°.-]", "", t).strip(" -")
+    if len(t) > 60:
+        t = t[:60].rsplit(" ", 1)[0]
+    return t[:1].upper() + t[1:].lower() if t.isupper() else t
+
+
 def prodotto(p: dict, dom: str) -> dict:
     st = p.get("stats") or {}
     cur, avg = st.get("current") or [], st.get("avg90") or []
@@ -76,7 +87,7 @@ def prodotto(p: dict, dom: str) -> dict:
         "img": img, "prezzo": round(prezzo / 100, 2) if prezzo else None,
         "media90": round(media / 100, 2) if media else None,
         "voto": round(voto / 10, 1) if voto else None, "recensioni": rec, "rank": rank,
-        "caratteristiche": feats,
+        "caratteristiche": feats, "punti": [b for b in (breve(f) for f in feats) if len(b) > 3][:3],
         "url": f"https://{DOMINIO[dom][1]}/dp/{p.get('asin')}?tag={TAG[dom]}",
     }
 

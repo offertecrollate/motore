@@ -80,6 +80,7 @@ h1{font-size:3.1vh;line-height:1.2;font-weight:800;margin-top:2vh;display:-webki
  <button type="button" onclick="prossima()">⏭ Prossima</button>
  <label>ogni <select id="min"><option>3</option><option selected>5</option><option>7</option><option>10</option></select> min</label>
  <label><input type="checkbox" id="voce" checked style="min-width:0;flex:0">voce</label>
+ <select id="vsel" title="Voce"></select>
  <label>da <select id="soglia"><option value="40">40%</option><option value="50" selected>50%</option><option value="60">60%</option><option value="70">70%</option></select></label>
 </div>
 <span id="hint">H = comandi · <span id="srv">ricerca Amazon: spenta</span></span>
@@ -93,11 +94,17 @@ var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&
 function corto(n){n=String(n).split(/[,|(\[–-]/)[0];return n.split(" ").slice(0,8).join(" ")}
 function carica(){return fetch("/deals.json?"+Date.now()).then(function(r){return r.json()}).then(function(j){
  D=j.filter(function(d){return d.image&&d.category!="adulti"&&String(d.category).indexOf("adult")<0})}).catch(function(){})}
+function vociIt(){var v=voci.filter(function(x){return /^it/i.test(x.lang)});
+ var sc=function(x){return (/natural/i.test(x.name)?4:0)+(/online|neural/i.test(x.name)?2:0)+(/google/i.test(x.name)?1:0)};
+ return v.sort(function(a,b){return sc(b)-sc(a)})}
+function riempiVoci(){voci=speechSynthesis.getVoices();var v=vociIt(),sel=$("vsel"),keep=sel.value;
+ sel.innerHTML=v.map(function(x){return '<option>'+esc(x.name)+'</option>'}).join("");
+ try{keep=keep||localStorage.getItem("ocv")||""}catch(e){}if(keep)sel.value=keep}
 function parla(txt){if(!$("voce").checked||!window.speechSynthesis)return;speechSynthesis.cancel();
- var u=new SpeechSynthesisUtterance(txt);u.lang="it-IT";u.rate=1.02;
- var v=voci.filter(function(x){return /^it/i.test(x.lang)});v.sort(function(a,b){return (/google|natural|online|neural/i.test(b.name)?1:0)-(/google|natural|online|neural/i.test(a.name)?1:0)});
- if(v[0])u.voice=v[0];speechSynthesis.speak(u)}
-if(window.speechSynthesis){voci=speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=function(){voci=speechSynthesis.getVoices()}}
+ var u=new SpeechSynthesisUtterance(txt);u.lang="it-IT";u.rate=1;u.pitch=1;
+ var n=$("vsel").value,v=vociIt().filter(function(x){return x.name==n})[0]||vociIt()[0];
+ if(v)u.voice=v;speechSynthesis.speak(u)}
+if(window.speechSynthesis){riempiVoci();speechSynthesis.onvoiceschanged=riempiVoci}
 function scegli(){var s=+$("soglia").value;
  var c=D.filter(function(d){return !visti[d.key]&&(amz(d)||d.pct>=s)});
  if(!c.length){visti={};c=D.filter(function(d){return amz(d)||d.pct>=s})}
@@ -107,14 +114,15 @@ function scegli(){var s=+$("soglia").value;
  var pool=(Math.random()<.4&&a.length)?a:(o.length?o:top);return pool[Math.floor(Math.random()*pool.length)]}
 function mostra(d,annuncio){$("am").style.display="none";cur=d;visti[d.key]=1;modo="giro";$("res").style.display="none";$("card").style.display="flex";
  var err=!amz(d)&&d.pct>=80;
- $("lbl").textContent=err?"⚡ POSSIBILE ERRORE DI PREZZO":"🔥 NUOVA OFFERTA";
+ $("lbl").textContent=err?"⚡ POSSIBILE ERRORE DI PREZZO":"🔥 OFFERTA DEL MOMENTO";
  $("card").innerHTML='<div class="ph">'+(amz(d)?"":'<span class="pct">-'+Math.round(d.pct)+'%</span>')+(err?'<span class="err">⚡ ERRORE?</span>':"")+'<img src="'+esc(d.image)+'" alt=""></div>'
   +'<h1>'+esc(d.name)+'</h1><p class="pr"><b>'+eur(d.price,d.currency)+'</b>'+(amz(d)?"":'<s>'+eur(d.ref,d.currency)+'</s>')+'</p>'
   +'<p class="shop">🛒 '+esc(d.shop)+'</p>';
  var p=Math.round(d.price*100)/100,e=Math.floor(p),c=Math.round((p-e)*100),val=d.currency=="CHF"?"franchi":"euro";
  var prezzo=e+" "+val+(c?" e "+c:"");
- if(annuncio!==false)parla((err?"Attenzione, possibile errore di prezzo! ":"Nuova offerta! ")+corto(d.name)+", su "+d.shop+", a "+prezzo
-  +(amz(d)?"":", invece di "+Math.round(d.ref)+" "+val+". Sconto del "+Math.round(d.pct)+" per cento")+". Il link lo trovate sul canale Telegram Offerte Crollate.");
+ var INTRO=["Guardate questa: ","Ecco un altro affare: ","Questa è interessante: ","Occhio a questa: ","Allora, adesso abbiamo ","Passiamo a ","Ecco qua: ",""];
+ if(annuncio!==false)parla((err?"Attenzione, qui potrebbe esserci un errore di prezzo. ":INTRO[Math.floor(Math.random()*INTRO.length)])+corto(d.name)+", su "+d.shop+", a "+prezzo
+  +(amz(d)?"":", invece di "+Math.round(d.ref)+" "+val+". Sconto del "+Math.round(d.pct)+" per cento")+(Math.random()<.35?". Il link lo trovate sul canale Telegram.":"."));
  t0=Date.now();prossimi()}
 function prossimi(){var s=+$("soglia").value;var n=D.filter(function(d){return !visti[d.key]&&(amz(d)||d.pct>=s)}).sort(function(a,b){return b.pct-a.pct}).slice(0,3);
  $("next").textContent=n.length?"Prossime: "+n.map(function(d){return corto(d.name).split(" ").slice(0,4).join(" ")}).join(" · "):""}
@@ -152,9 +160,9 @@ function cercaAmazon(q){nascondiTutto();modo="cerca";t0=Date.now()+60000;
   $("am").innerHTML=P.map(function(p,i){return '<div class="m'+(i?"":" best")+'">'+(i?"":'<span class="tag">⭐ CONSIGLIATO</span>')
    +'<div class="i"><img src="'+esc(p.img)+'" alt=""></div><div style="min-width:0;padding-right:11vh"><h4>'+esc(p.nome)+'</h4>'
    +'<p class="v">'+(p.voto?"★ "+num(p.voto):"")+(p.recensioni?" · "+p.recensioni.toLocaleString("it-IT")+" recensioni":"")+'</p>'
-   +'<ul>'+p.caratteristiche.slice(0,2).map(function(c){return "<li>"+esc(c.split(/[:.;–-]/)[0].slice(0,70))+"</li>"}).join("")+'</ul></div>'
+   +'<ul>'+(p.punti||[]).slice(0,2).map(function(c){return "<li>"+esc(c)+"</li>"}).join("")+'</ul></div>'
    +'<b class="p">'+eur(p.prezzo,"EUR")+'</b></div>'}).join("");
-  var b=P[0],car=(b.caratteristiche||[]).slice(0,2).map(function(c){return c.split(/[:.;]/)[0].slice(0,90)}).join(". ");
+  var b=P[0],car=(b.punti||[]).slice(0,3).join(", ");
   var txt="Per "+q+" il nostro consiglio è "+corto(b.nome)+", a "+eur(b.prezzo,"EUR").replace("€","euro")+". "
    +(b.motivi&&b.motivi.length?"Lo consigliamo per: "+b.motivi.join(", ")+". ":"")+(car?"Caratteristiche principali: "+car+". ":"")
    +(P.length>1?"In alternativa guardate anche "+corto(P[1].nome).split(" ").slice(0,5).join(" ")+". ":"")+"Il link lo mettiamo sul canale Telegram.";
@@ -165,4 +173,4 @@ function avvia(){$("start").style.display="none";parla("Benvenuti nella live di 
 $("q").addEventListener("keydown",function(e){if(e.key=="Enter")cerca();e.stopPropagation()});
 document.addEventListener("keydown",function(e){if(e.key=="h"||e.key=="H")$("ctl").classList.toggle("hid");if(e.key=="ArrowRight")prossima()});
 carica();setInterval(carica,600000);
-</script></body></html>
+$("vsel").addEventListener("change",function(){try{localStorage.setItem("ocv",this.value)}catch(e){};parla("Ciao, questa è la mia voce.")});</script></body></html>
