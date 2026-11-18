@@ -990,7 +990,7 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
         with open(os.path.join(out_dir, fname(lang)), "w", encoding="utf-8") as f:
             f.write(page)
     # 18/11/2026: pagina per le dirette TikTok (giro automatico delle offerte + voce + ricerca), non indicizzata
-    for _lv in ("live.html", "live-voce.html"):
+    for _lv in ("live.html", "live-voce.html", "link.html"):
         shutil.copy(os.path.join(os.path.dirname(__file__), _lv), os.path.join(out_dir, _lv))
 
     # ---------- pagine interne indicizzabili: categorie e offerte attive (rifatte da zero a ogni giro,
