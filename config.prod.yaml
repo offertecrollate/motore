@@ -115,6 +115,12 @@ countries:
         - {name: BF friggitrice ad aria, cats: [524015031], title: friggitrice, max_rank: 30000, min_discount: 30}
         - {name: BF macchina caffè, cats: [524015031], title: macchina caffè, max_rank: 30000, min_discount: 30}
         - {name: BF LEGO, cats: [523997031], title: lego, max_rank: 30000, min_discount: 25}
+        - {name: BF spazzolino elettrico, cats: [1571289031], title: spazzolino, max_rank: 30000, min_discount: 30}
+        - {name: BF rasoi e depilazione, cats: [1571289031], title: rasoio, max_rank: 30000, min_discount: 30}
+        - {name: BF shampoo e bagnoschiuma, cats: [1571289031], title: shampoo, max_rank: 30000, min_discount: 30}
+        - {name: BF dentifricio, cats: [1571289031], title: dentifricio, max_rank: 30000, min_discount: 30}
+        - {name: BF detersivi, cats: [1571289031], title: detersivo, max_rank: 30000, min_discount: 30}
+        - {name: BF deodoranti, cats: [1571289031], title: deodorante, max_rank: 30000, min_discount: 30}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}
@@ -329,6 +335,12 @@ countries:
         - {name: BF friggitrice ad aria, cats: [524015031], title: friggitrice, max_rank: 30000, min_discount: 30}
         - {name: BF macchina caffè, cats: [524015031], title: macchina caffè, max_rank: 30000, min_discount: 30}
         - {name: BF LEGO, cats: [523997031], title: lego, max_rank: 30000, min_discount: 25}
+        - {name: BF spazzolino elettrico, cats: [1571289031], title: spazzolino, max_rank: 30000, min_discount: 30}
+        - {name: BF rasoi e depilazione, cats: [1571289031], title: rasoio, max_rank: 30000, min_discount: 30}
+        - {name: BF shampoo e bagnoschiuma, cats: [1571289031], title: shampoo, max_rank: 30000, min_discount: 30}
+        - {name: BF dentifricio, cats: [1571289031], title: dentifricio, max_rank: 30000, min_discount: 30}
+        - {name: BF detersivi, cats: [1571289031], title: detersivo, max_rank: 30000, min_discount: 30}
+        - {name: BF deodoranti, cats: [1571289031], title: deodorante, max_rank: 30000, min_discount: 30}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}
