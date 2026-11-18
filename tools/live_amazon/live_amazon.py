@@ -119,13 +119,65 @@ def motivi(x: dict, tutti: list) -> list:
     return m
 
 
+ACCESSORI = ("cover", "custodia", "custodie", "case", "pellicola", "vetro temperato", "protezione", "protettiv",
+             "cavo", "caricatore", "alimentatore", "adattatore", "supporto", "staffa", "skin", "adesiv", "ricambi",
+             "compatibile con", "compatible", "per iphone", "per samsung", "per apple", "per ps5", "per playstation",
+             "cinturino", "guscio", "astuccio", "borsa", "sacca", "porta", "kit pulizia", "batteria di ricambio")
+
+
+def _norm(t: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFD", t.lower())
+    return "".join(c for c in t if unicodedata.category(c) != "Mn")
+
+
+def _parole(q: str) -> list:
+    import re
+    return [w for w in re.findall(r"[a-z0-9]+", _norm(q)) if w not in ("di", "da", "per", "il", "la", "le", "con", "e")]
+
+
+def pertinenza(p: dict, q: str, cats: str) -> float:
+    """Quanto il prodotto è proprio quello cercato (non una cover o un accessorio per quel prodotto)."""
+    titolo = _norm(p["nome"])
+    parole = _parole(q)
+    if not parole:
+        return 1.0
+    trovate = sum(1 for w in parole if w in titolo)
+    if trovate < len(parole) - (1 if len(parole) >= 3 else 0):
+        return 0.0                       # mancano parole cercate
+    qn = _norm(q)
+    if not any(a in qn for a in ACCESSORI):
+        testa = titolo[:70]
+        if any(a in testa for a in ACCESSORI) or "accessori" in cats:
+            return 0.0                   # è un accessorio, ma non l'hai cercato
+    # più le parole cercate sono all'inizio del titolo, più è il prodotto giusto
+    pos = [titolo.find(w) for w in parole if w in titolo]
+    return 1.0 + max(0.0, 1 - (sum(pos) / len(pos)) / 80)
+
+
 def cerca(q: str, dom: str = "it") -> dict:
-    r = keepa("search", {"domain": DOMINIO[dom][0], "type": "product", "term": q, "page": 0,
-                         "stats": 90, "rating": 1})
-    prodotti = [prodotto(p, dom) for p in (r.get("products") or [])]
-    prodotti = [p for p in prodotti if p["prezzo"] and p["img"]]
+    grezzi = []
+    for pagina in (0, 1):
+        r = keepa("search", {"domain": DOMINIO[dom][0], "type": "product", "term": q, "page": pagina,
+                             "stats": 90, "rating": 1})
+        grezzi += r.get("products") or []
+        buoni = []
+        for raw in grezzi:
+            x = prodotto(raw, dom)
+            cats = _norm(" ".join(c.get("name", "") for c in (raw.get("categoryTree") or [])))
+            x["pert"] = pertinenza(x, q, cats)
+            if x["prezzo"] and x["img"] and x["pert"] > 0:
+                buoni.append(x)
+        if len(buoni) >= 3:
+            break
+    prodotti = buoni
+    # niente prodotti troppo economici rispetto agli altri (di solito accessori sfuggiti al filtro)
+    if len(prodotti) >= 3:
+        prezzi = sorted(p["prezzo"] for p in prodotti)
+        mediano = prezzi[len(prezzi) // 2]
+        prodotti = [p for p in prodotti if p["prezzo"] >= mediano * 0.25]
     for p in prodotti:
-        p["punteggio"] = punteggio(p)
+        p["punteggio"] = round(punteggio(p) + p["pert"] * 4, 2)
     prodotti.sort(key=lambda p: -p["punteggio"])
     top = prodotti[:4]
     for p in top:
