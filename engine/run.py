@@ -22,6 +22,12 @@ from .sources import build_source
 log = logging.getLogger("errori-prezzo")
 
 
+def _black_friday(c) -> bool:
+    """Settimana del Black Friday Amazon: dal 19/11 al 30/11/2026 (rules.bf_dal / bf_al)."""
+    import datetime as _dt
+    oggi = _dt.date.today().isoformat()
+    return str(c["rules"].get("bf_dal", "9999")) <= oggi <= str(c["rules"].get("bf_al", "0000"))
+
 def _prezzi_amazon_attuali(keys, cfg, massimo=40):
     """Prezzo in vetrina oggi su Amazon (buy box Keepa) per le offerte pubblicate non uscite in questo giro.
     Ritorna {key: prezzo} (None = non disponibile). Le chiavi non controllate non compaiono."""
@@ -164,6 +170,8 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         soglia = (getattr(d.product, "post_pct", None)
                   or next((s.get("post_pct") for s in c["sources"] if s["name"] == d.product.source and s.get("post_pct")), None)
                   or float(c["rules"].get("min_post_pct", 70)))
+        if _black_friday(c) and d.product.source.startswith("amazon"):
+            soglia = min(soglia, float(c["rules"].get("bf_amazon_post_pct", 40)))  # Black Friday Amazon 19-30/11/2026
         if d.level != "errore" and d.discount_pct < soglia:
             riserva.append(d)  # se il giro resta vuoto si pubblicano comunque le più alte
             continue          # 17/11/2026: sui canali solo offerte fortissime ed errori di prezzo
@@ -207,7 +215,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
             nomi.add(nome)
             fresh.append(d)
     # 17/11/2026: almeno 2-3 Amazon per giro (le più scontate), anche sotto soglia
-    min_amz = int(c["rules"].get("min_amazon_per_run", 3))
+    min_amz = int(c["rules"].get("bf_min_amazon_per_run" if _black_friday(c) else "min_amazon_per_run", 3))
     amz = sum(1 for d in fresh if d.product.source.startswith("amazon"))
     if amz < min_amz:
         extra = sorted([d for d in riserva if d.product.source.startswith("amazon")

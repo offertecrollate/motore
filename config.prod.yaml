@@ -43,7 +43,11 @@ countries:
       repost_after_days: 30
       max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
       site_min_pct: 30
-      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)          # sito: tutte le offerte dal 30% in su
+      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)
+      bf_dal: '2026-11-19'      # Black Friday Amazon: Amazon sui canali dal 40% e almeno 6 per giro
+      bf_al: '2026-11-30'
+      bf_amazon_post_pct: 40
+      bf_min_amazon_per_run: 6          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
     - name: aliexpress_ch
@@ -99,6 +103,18 @@ countries:
         - {name: elettronica e TV, cats: [412609031], max_rank: 15000}
         - {name: informatica iPad monitor, cats: [425916031], max_rank: 15000}
         - {name: PS5 e videogiochi, cats: [412603031], max_rank: 10000}
+        - {name: BF cuffie e audio, cats: [412609031], title: cuffie, max_rank: 30000, min_discount: 30}
+        - {name: BF smartphone, cats: [412609031], title: smartphone, max_rank: 30000, min_discount: 25}
+        - {name: BF smartwatch, cats: [412609031], title: smartwatch, max_rank: 30000, min_discount: 30}
+        - {name: BF smart TV, cats: [412609031], title: smart tv, max_rank: 30000, min_discount: 25}
+        - {name: BF dispositivi Amazon Echo, cats: [412609031], title: echo, max_rank: 20000, min_discount: 25}
+        - {name: BF Fire TV e Kindle, cats: [412609031], title: fire tv, max_rank: 20000, min_discount: 25}
+        - {name: BF Nintendo Switch, cats: [412603031], title: switch, max_rank: 20000, min_discount: 25}
+        - {name: BF Xbox e controller, cats: [412603031], title: controller, max_rank: 20000, min_discount: 25}
+        - {name: BF robot aspirapolvere, cats: [524015031], title: aspirapolvere, max_rank: 30000, min_discount: 30}
+        - {name: BF friggitrice ad aria, cats: [524015031], title: friggitrice, max_rank: 30000, min_discount: 30}
+        - {name: BF macchina caffè, cats: [524015031], title: macchina caffè, max_rank: 30000, min_discount: 30}
+        - {name: BF LEGO, cats: [523997031], title: lego, max_rank: 30000, min_discount: 25}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}
@@ -161,7 +177,11 @@ countries:
       repost_after_days: 30
       max_posts_per_run: 15     # canali: solo le 15 più forti di tutti i negozi affiliati
       site_min_pct: 30
-      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)          # sito: tutte le offerte dal 30% in su
+      min_post_pct: 60          # canali: dal -60% o errori di prezzo (17/11/2026)
+      bf_dal: '2026-11-19'      # Black Friday Amazon: Amazon sui canali dal 40% e almeno 6 per giro
+      bf_al: '2026-11-30'
+      bf_amazon_post_pct: 40
+      bf_min_amazon_per_run: 6          # sito: tutte le offerte dal 30% in su
       pause_between_posts: 75   # un post ogni 75 secondi: 30 post stanno in circa 40 minuti
     sources:
     - name: aliexpress_it
@@ -297,6 +317,18 @@ countries:
         - {name: elettronica e TV, cats: [412609031], max_rank: 15000}
         - {name: informatica iPad monitor, cats: [425916031], max_rank: 15000}
         - {name: PS5 e videogiochi, cats: [412603031], max_rank: 10000}
+        - {name: BF cuffie e audio, cats: [412609031], title: cuffie, max_rank: 30000, min_discount: 30}
+        - {name: BF smartphone, cats: [412609031], title: smartphone, max_rank: 30000, min_discount: 25}
+        - {name: BF smartwatch, cats: [412609031], title: smartwatch, max_rank: 30000, min_discount: 30}
+        - {name: BF smart TV, cats: [412609031], title: smart tv, max_rank: 30000, min_discount: 25}
+        - {name: BF dispositivi Amazon Echo, cats: [412609031], title: echo, max_rank: 20000, min_discount: 25}
+        - {name: BF Fire TV e Kindle, cats: [412609031], title: fire tv, max_rank: 20000, min_discount: 25}
+        - {name: BF Nintendo Switch, cats: [412603031], title: switch, max_rank: 20000, min_discount: 25}
+        - {name: BF Xbox e controller, cats: [412603031], title: controller, max_rank: 20000, min_discount: 25}
+        - {name: BF robot aspirapolvere, cats: [524015031], title: aspirapolvere, max_rank: 30000, min_discount: 30}
+        - {name: BF friggitrice ad aria, cats: [524015031], title: friggitrice, max_rank: 30000, min_discount: 30}
+        - {name: BF macchina caffè, cats: [524015031], title: macchina caffè, max_rank: 30000, min_discount: 30}
+        - {name: BF LEGO, cats: [523997031], title: lego, max_rank: 30000, min_discount: 25}
         - {name: cioccolatini, post_pct: 40, cats: [6198082031], title: cioccolato, max_rank: 60000, min_discount: 20}
         - {name: caramelle e dolci, post_pct: 40, cats: [6198082031], title: caramelle, max_rank: 60000, min_discount: 20}
         - {name: bevande, post_pct: 40, cats: [6198082031], title: bibita, max_rank: 60000, min_discount: 20}
