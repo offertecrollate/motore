@@ -38,18 +38,23 @@ def _prezzi_amazon_attuali(keys, cfg, massimo=40):
     if not amz or not api or api.startswith("$"):
         return {}
     out = {}
-    try:
-        r = requests.get("https://api.keepa.com/product", timeout=120, params={
-            "key": api.strip(), "domain": 8, "asin": ",".join(k.split(":", 1)[1] for k in amz),
-            "stats": 1, "buybox": 1, "history": 0})
-        for p in r.json().get("products") or []:
-            bb = (p.get("stats") or {}).get("buyBoxPrice")
-            for k in amz:
-                if k.endswith(":" + p.get("asin", "")):
-                    out[k] = bb / 100 if bb and bb > 0 else None
-        log.info("Amazon: ricontrollati %d prezzi di offerte pubblicate", len(out))
-    except Exception as e:
-        log.warning("Ricontrollo prezzi Amazon non riuscito (nessuna offerta chiusa): %s", e)
+    dom = {"amazon_it": 8, "amazon_de": 3, "amazon_fr": 4}
+    for src, did in dom.items():                       # 19/11/2026: anche Amazon.de
+        grp = [k for k in amz if k.startswith(src + ":")]
+        if not grp:
+            continue
+        try:
+            r = requests.get("https://api.keepa.com/product", timeout=120, params={
+                "key": api.strip(), "domain": did, "asin": ",".join(k.split(":", 1)[1] for k in grp),
+                "stats": 1, "buybox": 1, "history": 0})
+            for p in r.json().get("products") or []:
+                bb = (p.get("stats") or {}).get("buyBoxPrice")
+                for k in grp:
+                    if k.endswith(":" + p.get("asin", "")):
+                        out[k] = bb / 100 if bb and bb > 0 else None
+        except Exception as e:
+            log.warning("Ricontrollo prezzi %s non riuscito (nessuna offerta chiusa): %s", src, e)
+    log.info("Amazon: ricontrollati %d prezzi di offerte pubblicate", len(out))
     return out
 
 
@@ -167,6 +172,8 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
             continue
         if any(db.already_posted(d.product.key, paese, d.product.price, c["rules"].get("repost_after_days", 7))
                for paese in ("it", "ch")):
+            continue
+        if getattr(d.product, "unchecked", False):   # prezzo Amazon non verificato: solo sito
             continue
         soglia = (getattr(d.product, "post_pct", None)
                   or next((s.get("post_pct") for s in c["sources"] if s["name"] == d.product.source and s.get("post_pct")), None)

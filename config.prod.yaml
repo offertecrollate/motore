@@ -86,6 +86,64 @@ countries:
       max_pages: 20
       min_discount: 30
       site_only: true
+    # Amazon.de per la Svizzera (ID offertecrol06-21, iscrizione di Giuseppe del 19/11/2026): sito e canali svizzeri
+    - name: amazon_de
+      type: keepa
+      api_key: ${KEEPA_KEY}
+      domain: de
+      tag: offertecrol06-21
+      min_discount: 30
+      min_price: 1
+      quality: true
+      max_sales_rank: 50000
+      min_rating: 38
+      focus:
+        - {name: Elektronik, cats: [562066], max_rank: 15000, min_discount: 30}
+        - {name: Computer, cats: [340843031], max_rank: 15000, min_discount: 30}
+        - {name: Games PS5, cats: [300992], max_rank: 10000, min_discount: 30}
+        - {name: Küche Haushalt, cats: [3167641], max_rank: 8000, min_discount: 30}
+        - {name: Drogerie, cats: [64187031], max_rank: 8000, min_discount: 30}
+        - {name: Lebensmittel, cats: [340846031], max_rank: 10000, min_discount: 25, post_pct: 40}
+        - {name: BF teuer, cats: [562066, 340843031, 300992, 3167641], max_rank: 60000, min_discount: 35, min_price: 150}
+        - {name: BF Kopfhörer, cats: [562066], title: kopfhörer, max_rank: 30000, min_discount: 30}
+        - {name: BF Smartphone, cats: [562066], title: smartphone, max_rank: 30000, min_discount: 25}
+        - {name: BF Smartwatch, cats: [562066], title: smartwatch, max_rank: 30000, min_discount: 30}
+        - {name: BF Fernseher, cats: [562066], title: fernseher, max_rank: 30000, min_discount: 25}
+        - {name: BF Echo, cats: [562066], title: echo, max_rank: 20000, min_discount: 25}
+        - {name: BF Fire TV, cats: [562066], title: fire tv, max_rank: 20000, min_discount: 25}
+        - {name: BF Switch, cats: [300992], title: switch, max_rank: 20000, min_discount: 25}
+        - {name: BF Controller, cats: [300992], title: controller, max_rank: 20000, min_discount: 25}
+        - {name: BF Saugroboter, cats: [3167641], title: saugroboter, max_rank: 30000, min_discount: 30}
+        - {name: BF Heißluftfritteuse, cats: [3167641], title: heißluftfritteuse, max_rank: 30000, min_discount: 30}
+        - {name: BF Kaffeemaschine, cats: [3167641], title: kaffeemaschine, max_rank: 30000, min_discount: 30}
+        - {name: BF LEGO, cats: [12950651], title: lego, max_rank: 30000, min_discount: 25}
+        - {name: BF Zahnbürste, cats: [64187031], title: zahnbürste, max_rank: 30000, min_discount: 30}
+        - {name: BF Rasierer, cats: [64187031], title: rasierer, max_rank: 30000, min_discount: 30}
+        - {name: BF Waschmittel, cats: [64187031], title: waschmittel, max_rank: 30000, min_discount: 30}
+        - {name: marca Apple, cats: [562066, 340843031], title: apple, max_rank: 60000, min_discount: 20}
+        - {name: marca Samsung, cats: [562066, 340843031], title: samsung, max_rank: 60000, min_discount: 20}
+        - {name: marca Sony, cats: [562066, 300992], title: sony, max_rank: 60000, min_discount: 20}
+        - {name: marca Dyson, cats: [3167641, 64187031], title: dyson, max_rank: 60000, min_discount: 20}
+        - {name: marca DeLonghi, cats: [3167641], title: delonghi, max_rank: 60000, min_discount: 20}
+        - {name: marca Philips, cats: [3167641, 64187031, 562066], title: philips, max_rank: 60000, min_discount: 20}
+        - {name: marca Xiaomi, cats: [562066, 3167641], title: xiaomi, max_rank: 60000, min_discount: 20}
+        - {name: marca Bose, cats: [562066], title: bose, max_rank: 60000, min_discount: 20}
+        - {name: marca JBL, cats: [562066], title: jbl, max_rank: 60000, min_discount: 20}
+        - {name: marca Nintendo, cats: [300992], title: nintendo, max_rank: 60000, min_discount: 20}
+        - {name: marca Logitech, cats: [340843031, 300992], title: logitech, max_rank: 60000, min_discount: 20}
+        - {name: marca Oral-B, cats: [64187031], title: oral, max_rank: 60000, min_discount: 20}
+        - {name: marca Braun, cats: [64187031], title: braun, max_rank: 60000, min_discount: 20}
+        - {name: marca Garmin, cats: [562066], title: garmin, max_rank: 60000, min_discount: 20}
+      exclude_media: false
+      max_discount: 95
+      max_check: 3000
+      max_new: 120            # meno controlli di Amazon.it: i gettoni restano prima all'Italia
+      cache_hours: 6
+      pages: 4
+      trust_old_price: true
+      site_old_price: true
+      max_site: 3000
+      site_unchecked: true
     # Amazon.it anche sul sito svizzero (Amazon.it spedisce in Svizzera molti prodotti): solo sito, con l'avviso
     # "controlla la spedizione in Svizzera nel carrello"; sui canali escono già dalla parte italiana
     - name: amazon_it
@@ -156,7 +214,8 @@ countries:
       pages: 4                # tante offerte Amazon sul sito (decisione 15/11/2026): 600 candidati, 20 gettoni
       site_only: true
       site_old_price: true
-      max_site: 350
+      max_site: 3000
+      site_unchecked: true
     # Sedusia CH (Awin 19024, negozio per adulti): categoria "Adulti 18+" con conferma età, fuori da Google,
     # mai su Facebook, su Telegram con immagine neutra "18+" (decisione di Giuseppe del 14/11/2026)
     - name: awin_sedusia_ch
@@ -394,7 +453,8 @@ countries:
       pages: 6                # tante offerte Amazon sul sito (decisione 15/11/2026): 900 candidati, 30 gettoni
       trust_old_price: true
       site_old_price: true    # sul sito anche le altre offerte Amazon del giorno (non solo le 5 pubblicate)
-      max_site: 500
+      max_site: 3000
+      site_unchecked: true
     publishers:
     - type: facebook_page
       post_tag: '#ADV'

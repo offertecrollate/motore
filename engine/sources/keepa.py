@@ -178,6 +178,7 @@ class KeepaSource:
         cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < ttl and v.get("v") == 3}
         # prima i più venduti (decisione di Giuseppe del 16/11/2026): classifica vendite Amazon più alta
         cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False), getattr(p, "rank", 10 ** 9)))
+        cands_tutti = list(cands)
         cands = cands[: int(c.get("max_check", 300))]
         todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache][: int(c.get("max_new", 300))]
         for i in range(0, len(todo), 100):
@@ -224,4 +225,16 @@ class KeepaSource:
             keep.append(p)
         log.info("%s: %d offerte con prezzo e prezzo barrato uguali ad Amazon (%d scartate: prezzo gonfiato poco prima; %d di moda/taglie)",
                  c["name"], len(keep), gonf, moda)
+        # 19/11/2026 (Giuseppe): se i gettoni non bastano, sul sito anche gli altri prodotti trovati da Keepa,
+        # con prezzo Keepa e media 90 giorni, senza controllo del prezzo barrato. Mai su Telegram/Facebook.
+        if c.get("site_unchecked"):
+            n = 0
+            for p in cands_tutti:
+                if f"{dom_id}:{p.product_id}" in cache or not p.old_price or p.old_price <= p.price:
+                    continue
+                if (1 - p.price / p.old_price) * 100 < mind:
+                    continue
+                p.unchecked = True
+                keep.append(p); n += 1
+            log.info("%s: %d offerte in più sul sito senza controllo del prezzo barrato", c["name"], n)
         return keep
