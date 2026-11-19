@@ -11,6 +11,7 @@ case "$1" in
     else
       git show origin/dati:prezzi.db.gz | gunzip > prezzi.db
     fi
+    git show origin/dati:keepa_prezzi.json > keepa_prezzi.json 2>/dev/null || true
     ls -la prezzi.db ;;
   salva)
     [ -f prezzi.db ] || exit 0
@@ -25,6 +26,7 @@ case "$1" in
     ls -la /tmp/dati
     cd /tmp/dati && git init -q -b dati
     git config user.name "Offerte Crollate"; git config user.email "offertecrollate@gmail.com"
+    [ -f "$OLDPWD/keepa_prezzi.json" ] && cp "$OLDPWD/keepa_prezzi.json" . && git add keepa_prezzi.json
     git add $f && git commit -qm "Storico prezzi $(date -u +%F_%H%M) ${2:-}"
     git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dati ;;
   *) echo "uso: carica | salva"; exit 2 ;;

@@ -150,7 +150,9 @@ countries:
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
-      max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
+      max_check: 3000         # prodotti Amazon considerati (quelli già controllati non costano gettoni)
+      max_new: 200            # prodotti nuovi da controllare per giro (3 gettoni l'uno)
+      cache_hours: 6          # prezzi controllati validi 6 ore: il sito accumula molte più offerte Amazon
       pages: 4                # tante offerte Amazon sul sito (decisione 15/11/2026): 600 candidati, 20 gettoni
       site_only: true
       site_old_price: true
@@ -386,7 +388,9 @@ countries:
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
-      max_check: 250          # prodotti di cui leggere il prezzo vero Amazon (3 gettoni l'uno)
+      max_check: 3000         # prodotti Amazon considerati (quelli già controllati non costano gettoni)
+      max_new: 200            # prodotti nuovi da controllare per giro (3 gettoni l'uno)
+      cache_hours: 6          # prezzi controllati validi 6 ore: il sito accumula molte più offerte Amazon
       pages: 6                # tante offerte Amazon sul sito (decisione 15/11/2026): 900 candidati, 30 gettoni
       trust_old_price: true
       site_old_price: true    # sul sito anche le altre offerte Amazon del giorno (non solo le 5 pubblicate)

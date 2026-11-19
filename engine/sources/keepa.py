@@ -174,11 +174,12 @@ class KeepaSource:
         except Exception:
             cache = {}
         now = time.time()
-        cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < 3600 and v.get("v") == 3}
+        ttl = float(c.get("cache_hours", 1)) * 3600   # 19/11/2026: cache salvata tra i giri, così il sito accumula offerte
+        cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < ttl and v.get("v") == 3}
         # prima i più venduti (decisione di Giuseppe del 16/11/2026): classifica vendite Amazon più alta
         cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False), getattr(p, "rank", 10 ** 9)))
         cands = cands[: int(c.get("max_check", 300))]
-        todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache]
+        todo = [p.product_id for p in cands if f"{dom_id}:{p.product_id}" not in cache][: int(c.get("max_new", 300))]
         for i in range(0, len(todo), 100):
             chunk = todo[i:i + 100]
             try:
