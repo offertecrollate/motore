@@ -69,7 +69,7 @@ def _awin_rows(list_url: str) -> list:
     return _AWIN_ROWS[list_url]
 
 
-def awin_feed_url(list_url: str, feed_id: str = None, advertiser_id: str = None) -> str:
+def awin_feed_url(list_url: str, feed_id: str = None, advertiser_id: str = None, lang: str = None) -> str:
     """Trova nella lista feed di Awin l'indirizzo di download: per Feed ID, oppure per ID inserzionista
     (sceglie il catalogo con più prodotti; utile appena iscritti, quando il Feed ID non si conosce ancora)."""
     rows = _awin_rows(list_url)
@@ -78,6 +78,9 @@ def awin_feed_url(list_url: str, feed_id: str = None, advertiser_id: str = None)
     else:
         mine = [r for r in rows if r.get("Advertiser ID") == str(advertiser_id)]
         mine.sort(key=lambda r: int(r.get("No of products") or 0), reverse=True)
+        if lang:   # 20/11/2026: se il negozio ha un catalogo in italiano, prendi quello (MediaMarkt CH: de/fr/it)
+            pref = [r for r in mine if str(r.get("Language") or "").lower().startswith(lang)]
+            mine = pref or mine
         url = mine[0]["URL"] if mine else None
     if not url:
         raise ValueError(f"Catalogo Awin {feed_id or 'inserzionista ' + str(advertiser_id)} non ancora disponibile")
@@ -99,6 +102,7 @@ class FeedSource:
         self.awin_list = cfg.get("awin_list")   # oppure: lista feed Awin + Feed ID
         self.awin_fid = cfg.get("awin_feed_id")
         self.awin_adv = cfg.get("awin_advertiser_id")
+        self.cfg_lang = cfg.get("awin_lang")
         self.file = cfg.get("file")        # oppure file locale (per test)
         self.cols = {**PRESETS[cfg.get("preset", "generic")], **cfg.get("columns", {})}
         self.shop = cfg.get("shop")        # nome negozio fisso, se il feed non lo dà
@@ -110,7 +114,7 @@ class FeedSource:
             raw = open(self.file, "rb").read()
         else:
             if not self.url and self.awin_list and (self.awin_fid or self.awin_adv):
-                self.url = awin_feed_url(self.awin_list, self.awin_fid, self.awin_adv)
+                self.url = awin_feed_url(self.awin_list, self.awin_fid, self.awin_adv, self.cfg_lang)
             r = requests.get(self.url, timeout=120)
             r.raise_for_status()
             raw = r.content

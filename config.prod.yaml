@@ -246,6 +246,7 @@ countries:
       min_discount: 30
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '14040'
+      awin_lang: it           # catalogo in italiano, se MediaMarkt lo offre
       affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     publishers:
     - type: facebook_page
