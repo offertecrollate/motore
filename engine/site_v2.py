@@ -820,7 +820,9 @@ OVQ_SHOPS = {
            ["Acer Store", _AW % 15530, "https://store.acer.com/it-it/catalogsearch/result/?q="],
            ["Moulinex", _AW % 9450, "https://www.moulinex.it/search?text="]],
     "ch": [["Amazon.de", "https://www.amazon.de/s?tag=offertecrol06-21&k=", ""],
-           ["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""]],
+           ["Amazon.it", "https://www.amazon.it/s?tag=offertecrolla-21&k=", ""],
+           ["MediaMarkt", "https://www.awin1.com/cread.php?awinmid=14040&awinaffid=3152592&clickref=cerca&ued=",
+            "https://www.mediamarkt.ch/de/search.html?query="]],
 }
 OVQJS = ("function ocOvqUrl(s,q){return s[2]?s[1]+encodeURIComponent(s[2]+encodeURIComponent(q)):s[1]+encodeURIComponent(q);}"
          "function ocOvq(q,n,force){var p=document.getElementById('ovq');if(!p)return;q=(q||'').trim();"

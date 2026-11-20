@@ -236,6 +236,17 @@ countries:
       min_discount: 15
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '31407'
+    # MediaMarkt CH (Awin 14040, accettati il 20/11/2026): sito svizzero, Telegram e Facebook
+    - name: awin_mediamarkt_ch
+      type: feed
+      preset: awin
+      currency: CHF
+      shop: MediaMarkt
+      site_old_price: true
+      min_discount: 30
+      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+      awin_advertiser_id: '14040'
+      affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     publishers:
     - type: facebook_page
       post_tag: '#ADV'
