@@ -33,7 +33,7 @@ site:
 countries:
   ch:
     rules:
-      max_site_only: 5000     # in pratica nessun limite
+      max_site_only: 0         # nessun limite al totale del sito (20/11/2026)
       history_days: 30
       min_history: 7
       offer_pct: 30
@@ -59,7 +59,7 @@ countries:
       currency: CHF
       language: IT
       min_discount: 30
-      pages: 2
+      pages: 5   # 20/11: più pagine, nessun limite al sito
       site_old_price: true    # sul sito subito, con il prezzo pieno dichiarato da AliExpress
       affiliate: true         # link affiliato: anche su Telegram e Facebook
       keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
@@ -83,7 +83,7 @@ countries:
       url: https://natkina.com
       shop: Natkina
       currency: CHF
-      max_pages: 20
+      max_pages: 100
       min_discount: 30
       site_only: true
     # Amazon.de per la Svizzera (ID offertecrol06-21, iscrizione di Giuseppe del 19/11/2026): sito e canali svizzeri
@@ -136,13 +136,12 @@ countries:
         - {name: marca Garmin, cats: [562066], title: garmin, max_rank: 60000, min_discount: 20}
       exclude_media: false
       max_discount: 95
-      max_check: 3000
+      max_check: 20000        # tutti i prodotti Amazon trovati
       max_new: 120            # meno controlli di Amazon.it: i gettoni restano prima all'Italia
       cache_hours: 6
-      pages: 4
+      pages: 10   # 20/11: più pagine, nessun limite al sito
       trust_old_price: true
       site_old_price: true
-      max_site: 3000
       site_unchecked: true
     # Amazon.it anche sul sito svizzero (Amazon.it spedisce in Svizzera molti prodotti): solo sito, con l'avviso
     # "controlla la spedizione in Svizzera nel carrello"; sui canali escono già dalla parte italiana
@@ -208,13 +207,12 @@ countries:
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
-      max_check: 3000         # prodotti Amazon considerati (quelli già controllati non costano gettoni)
+      max_check: 20000        # tutti i prodotti Amazon trovati
       max_new: 200            # prodotti nuovi da controllare per giro (3 gettoni l'uno)
       cache_hours: 6          # prezzi controllati validi 6 ore: il sito accumula molte più offerte Amazon
-      pages: 4                # tante offerte Amazon sul sito (decisione 15/11/2026): 600 candidati, 20 gettoni
+      pages: 10   # 20/11: più pagine, nessun limite al sito
       site_only: true
       site_old_price: true
-      max_site: 3000
       site_unchecked: true
     # Sedusia CH (Awin 19024, negozio per adulti): categoria "Adulti 18+" con conferma età, fuori da Google,
     # mai su Facebook, su Telegram con immagine neutra "18+" (decisione di Giuseppe del 14/11/2026)
@@ -226,7 +224,6 @@ countries:
       adult: true
       site_old_price: true
       min_discount: 30
-      max_site: 40
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '19024'
     # Electrolux CH (Awin 31407): accessori, pulizia e ricambi
@@ -237,7 +234,6 @@ countries:
       shop: Electrolux
       site_old_price: true
       min_discount: 15
-      max_site: 60
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '31407'
     publishers:
@@ -250,7 +246,7 @@ countries:
       page_token: ${FB_PAGE_TOKEN}
   it:
     rules:
-      max_site_only: 5000     # in pratica nessun limite
+      max_site_only: 0         # nessun limite al totale del sito (20/11/2026)
       history_days: 30
       min_history: 7
       offer_pct: 30
@@ -276,7 +272,7 @@ countries:
       currency: EUR
       language: IT
       min_discount: 30
-      pages: 2
+      pages: 5   # 20/11: più pagine, nessun limite al sito
       site_old_price: true    # sul sito subito, con il prezzo pieno dichiarato da AliExpress
       affiliate: true         # link affiliato: anche su Telegram e Facebook
       keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
@@ -289,7 +285,6 @@ countries:
       shop: Moulinex
       site_old_price: true
       min_discount: 30
-      max_site: 1000
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '9450'
       affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
@@ -301,7 +296,6 @@ countries:
       post_pct: 70           # Telegram/Facebook solo dal 70%; sul sito dal 30%
       site_old_price: true
       min_discount: 30
-      max_site: 1000
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '9923'
       affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
@@ -364,7 +358,7 @@ countries:
       shop: Onestreet
       awin_mid: 128805       # approvato su Awin il 15/11/2026
       currency: EUR
-      max_pages: 20
+      max_pages: 100
       min_discount: 30
       site_only: true
     - name: shopify_yesshop_it
@@ -372,7 +366,7 @@ countries:
       url: https://www.yesshoponline.it
       shop: Yes Shop
       currency: EUR
-      max_pages: 20
+      max_pages: 100
       min_discount: 30
       site_only: true
     - name: shopify_celebre_it
@@ -381,7 +375,7 @@ countries:
       shop: Celebre Store
       awin_mid: 118201       # approvato su Awin il 15/11/2026
       currency: EUR
-      max_pages: 20
+      max_pages: 100
       min_discount: 30
       site_only: true
     # Amazon.it via Keepa (abbonamento di Giuseppe dal 15/11/2026): sconto sulla media a 90 giorni
@@ -447,13 +441,12 @@ countries:
         - {name: Black Friday prodotti costosi, cats: [412609031, 425916031, 412603031, 524015031], max_rank: 60000, min_price: 150, min_discount: 35}
       exclude_media: false    # anche libri, Kindle, musica e film
       max_discount: 95        # anche i possibili errori sopra l'80%
-      max_check: 3000         # prodotti Amazon considerati (quelli già controllati non costano gettoni)
+      max_check: 20000        # tutti i prodotti Amazon trovati
       max_new: 200            # prodotti nuovi da controllare per giro (3 gettoni l'uno)
       cache_hours: 6          # prezzi controllati validi 6 ore: il sito accumula molte più offerte Amazon
-      pages: 6                # tante offerte Amazon sul sito (decisione 15/11/2026): 900 candidati, 30 gettoni
+      pages: 10   # 20/11: più pagine, nessun limite al sito
       trust_old_price: true
       site_old_price: true    # sul sito anche le altre offerte Amazon del giorno (non solo le 5 pubblicate)
-      max_site: 3000
       site_unchecked: true
     publishers:
     - type: facebook_page

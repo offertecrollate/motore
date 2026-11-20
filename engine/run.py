@@ -344,7 +344,8 @@ def _site_only_deals(c: dict, products: list) -> list:
         per[d.product.source] = per.get(d.product.source, 0) + 1
         if not cap or per[d.product.source] <= cap:
             keep.append(d)
-    return keep[: c.get("rules", {}).get("max_site_only", 150)]
+    tot = int(c.get("rules", {}).get("max_site_only", 0) or 0)     # 0 = nessun limite (Giuseppe 20/11/2026)
+    return keep[:tot] if tot else keep
 
 
 def _avviso_privato(cfg, d, country):
