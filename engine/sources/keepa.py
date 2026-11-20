@@ -47,18 +47,26 @@ def _media(st: dict, campo: str):
 
 
 def _gonfiato(v: dict) -> bool:
-    """Prezzo alzato poco prima dello sconto per farlo sembrare un affare (decisione di Giuseppe del 15/11/2026).
-    - il prezzo di adesso non è davvero più basso di quello che costava di solito negli ultimi 6 mesi
-      (meno del 10% sotto la media 180 giorni, o 90 se il prodotto è più recente);
-    - oppure nell'ultimo mese il prezzo medio è salito di oltre il 20% rispetto ai 6 mesi: rialzo recente."""
-    bb, a30 = v.get("bb"), v.get("a30")
-    rif = v.get("a180") or v.get("a90")
-    if not bb or not rif:
+    """Prezzo alzato prima dello sconto per farlo sembrare un affare. Dal 20/11/2026 (Giuseppe) il riferimento
+    è il prezzo medio degli ultimi 60 giorni:
+    - il prezzo di adesso deve essere almeno il 10% sotto la media dei 60 giorni (e dei 90/180 se c'è);
+    - nell'ultimo mese il prezzo medio non deve essere salito oltre il 15% rispetto ai 60 giorni (rialzo recente);
+    - per gli sconti forti (dal 50%) lo sconto vero rispetto ai 60 giorni deve essere almeno il 60%
+      di quello dichiarato: un -70% che rispetto ai 60 giorni è solo -15% è un prezzo barrato gonfiato."""
+    bb, a30, basis = v.get("bb"), v.get("a30"), v.get("basis")
+    medie = [x for x in (v.get("a60"), v.get("a90"), v.get("a180")) if x]
+    if not bb or not medie:
         return False
+    rif = min(medie)
     if bb > rif * 0.90:
         return True
-    if a30 and a30 > rif * 1.20:
+    if a30 and v.get("a60") and a30 > v["a60"] * 1.15:
         return True
+    if basis and basis > bb:
+        dichiarato = 1 - bb / basis
+        vero = 1 - bb / rif
+        if dichiarato >= 0.50 and vero < dichiarato * 0.60:
+            return True
     return False
 
 
@@ -175,7 +183,7 @@ class KeepaSource:
             cache = {}
         now = time.time()
         ttl = float(c.get("cache_hours", 1)) * 3600   # 19/11/2026: cache salvata tra i giri, così il sito accumula offerte
-        cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < ttl and v.get("v") == 3}
+        cache = {k: v for k, v in cache.items() if now - v.get("t", 0) < ttl and v.get("v") == 4}
         # prima i più venduti (decisione di Giuseppe del 16/11/2026): classifica vendite Amazon più alta
         cands = sorted(cands, key=lambda p: (not getattr(p, "focus", False), getattr(p, "rank", 10 ** 9)))
         cands_tutti = list(cands)
@@ -186,7 +194,7 @@ class KeepaSource:
             try:
                 r = requests.get(f"{API}/product", timeout=90, params={
                     "key": self.key, "domain": dom_id, "asin": ",".join(chunk),
-                    "stats": 1, "buybox": 1, "history": 0})
+                    "stats": 60, "buybox": 1, "history": 0})   # stats=60: media degli ultimi 60 giorni in "avg"
                 if r.status_code == 429:
                     log.warning("%s: gettoni Keepa finiti, controllo prezzi Amazon interrotto", c["name"])
                     break
@@ -195,7 +203,7 @@ class KeepaSource:
                 log.info("%s: prezzi Amazon controllati %d (gettoni rimasti %s)", c["name"], len(chunk), j.get("tokensLeft"))
                 for pr in j.get("products") or []:
                     st = pr.get("stats") or {}
-                    cache[f"{dom_id}:{pr.get('asin')}"] = {"t": now, "v": 3, "root": pr.get("rootCategory"), "bb": _eur(st.get("buyBoxPrice")),
+                    cache[f"{dom_id}:{pr.get('asin')}"] = {"t": now, "v": 4, "a60": _media(st, "avg"), "root": pr.get("rootCategory"), "bb": _eur(st.get("buyBoxPrice")),
                                                            "a30": _media(st, "avg30"), "a90": _media(st, "avg90"),
                                                            "a180": _media(st, "avg180"),
                                                            "basis": _eur(st.get("buyBoxSavingBasis")),
