@@ -81,6 +81,14 @@ def awin_feed_url(list_url: str, feed_id: str = None, advertiser_id: str = None)
         url = mine[0]["URL"] if mine else None
     if not url:
         raise ValueError(f"Catalogo Awin {feed_id or 'inserzionista ' + str(advertiser_id)} non ancora disponibile")
+    # 20/11/2026: chiedi sempre anche le colonne delle foto di riserva (MediaMarkt lascia vuota merchant_image_url)
+    import re as _re
+    m = _re.search(r"/columns/([^/]+)/", url)
+    if m:
+        cols = m.group(1).split(",")
+        extra = [x for x in ("aw_image_url", "large_image", "alternate_image", "merchant_thumb_url") if x not in cols]
+        if extra:
+            url = url.replace(m.group(0), "/columns/" + ",".join(cols + extra) + "/")
     return url
 
 
