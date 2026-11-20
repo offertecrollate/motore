@@ -13,6 +13,10 @@ import os
 from typing import Optional
 
 import requests
+
+# 20/11/2026: alcuni negozi (MediaMarkt) rifiutano le richieste che non sembrano un browser vero
+_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36",
+       "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8", "Accept-Language": "it-CH,it;q=0.9,de;q=0.8"}
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 from .models import Deal
@@ -352,7 +356,7 @@ def make_card_moderna(deal: Deal, lang: str = "it", product_img: Optional[Image.
     if product_img is None:
         if not p.image:
             return None
-        r = requests.get(p.image, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+        r = requests.get(p.image, timeout=30, headers=_UA)
         r.raise_for_status()
         product_img = Image.open(io.BytesIO(r.content))
     L = LABEL.get(lang, LABEL["it"])
@@ -477,9 +481,9 @@ def make_card(deal: Deal, lang: str = "it", product_img: Optional[Image.Image] =
         if product_img is None:
             if not p.image:
                 return None
-            r = requests.get(hd_url(p.image), timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+            r = requests.get(hd_url(p.image), timeout=30, headers=_UA)
             if r.status_code >= 400:
-                r = requests.get(p.image, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+                r = requests.get(p.image, timeout=30, headers=_UA)
             r.raise_for_status()
             product_img = Image.open(io.BytesIO(r.content))
         fn = make_crollata if style == "crollata" else make_semplice
@@ -492,7 +496,7 @@ def make_card(deal: Deal, lang: str = "it", product_img: Optional[Image.Image] =
     if product_img is None:
         if not p.image:
             return None
-        r = requests.get(p.image, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
+        r = requests.get(p.image, timeout=30, headers=_UA)
         r.raise_for_status()
         product_img = Image.open(io.BytesIO(r.content))
     from . import card_crollo
