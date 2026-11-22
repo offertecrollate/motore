@@ -135,6 +135,38 @@ class KeepaSource:
                 break
         if c.get("amazon_prices", True):
             out = self._prezzi_amazon(out, dom_id)
+        out += self._fissi(dom_id, site, tag)
+        return out
+
+    def _fissi(self, dom_id, site, tag) -> List[Product]:
+        """Prodotti scelti da Giuseppe (config "asins"): sempre sul sito, con prezzo Amazon aggiornato,
+        anche se lo sconto è sotto la soglia. Non vanno su Telegram/Facebook da soli (22/11/2026)."""
+        c, asins = self.cfg, [str(a).strip() for a in (self.cfg.get("asins") or []) if str(a).strip()]
+        if not asins:
+            return []
+        out = []
+        try:
+            r = requests.get(f"{API}/product", timeout=90, params={
+                "key": self.key, "domain": dom_id, "asin": ",".join(asins), "stats": 60, "buybox": 1, "history": 0})
+            r.raise_for_status()
+            for pr in r.json().get("products") or []:
+                st = pr.get("stats") or {}
+                bb = _eur(st.get("buyBoxPrice"))
+                if not bb:
+                    continue
+                basis = _eur(st.get("buyBoxSavingBasis"))
+                medie = [x for x in (_media(st, "avg"), _media(st, "avg90")) if x]
+                old = basis if basis and basis > bb else (max(medie) if medie and max(medie) > bb else bb)
+                img = (pr.get("imagesCSV") or "").split(",")[0]
+                p = Product(source=c["name"], product_id=pr["asin"], name=(pr.get("title") or pr["asin"])[:200],
+                            price=bb, currency="EUR", shop=f"Amazon.{c.get('domain', 'it')}",
+                            url=f"https://www.{site}/dp/{pr['asin']}" + (f"?tag={tag}" if tag else ""),
+                            image=f"https://m.media-amazon.com/images/I/{img}" if img else None, old_price=old)
+                p.pinned = True
+                out.append(p)
+            log.info("%s: %d prodotti fissi scelti da Giuseppe", c["name"], len(out))
+        except Exception as e:
+            log.warning("%s: prodotti fissi non letti: %s", c["name"], e)
         return out
 
     def _aggiungi(self, items, out, seen, site, tag, dom_id, focus=False, gruppo=""):

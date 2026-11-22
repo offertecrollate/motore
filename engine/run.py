@@ -173,7 +173,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         if any(db.already_posted(d.product.key, paese, d.product.price, c["rules"].get("repost_after_days", 7))
                for paese in ("it", "ch")):
             continue
-        if getattr(d.product, "unchecked", False):   # prezzo Amazon non verificato: solo sito
+        if getattr(d.product, "unchecked", False) or getattr(d.product, "pinned", False):   # solo sito
             continue
         soglia = (getattr(d.product, "post_pct", None)
                   or next((s.get("post_pct") for s in c["sources"] if s["name"] == d.product.source and s.get("post_pct")), None)
@@ -307,7 +307,7 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     site_list, visti = [], set()
     minimo_sito = float(c["rules"].get("site_min_pct", 30))   # sul sito tutte le offerte dal 30% in su
     for d in fresh + deals + site_deals:
-        if d.discount_pct < minimo_sito:
+        if d.discount_pct < minimo_sito and not getattr(d.product, "pinned", False):
             continue
         if d.product.key not in visti:
             visti.add(d.product.key)
@@ -331,6 +331,10 @@ def _site_only_deals(c: dict, products: list) -> list:
     out = []
     for p in products:
         s = rules.get(p.source)
+        if s and getattr(p, "pinned", False):          # prodotto scelto da Giuseppe: sempre sul sito
+            pct = (1 - p.price / p.old_price) * 100 if p.old_price and p.old_price > p.price else 0
+            out.append(Deal(p, p.old_price or p.price, round(pct, 1), "offerta", 0, extra={"pinned": True}))
+            continue
         if not s or not p.old_price or p.old_price <= p.price:
             continue
         pct = (1 - p.price / p.old_price) * 100

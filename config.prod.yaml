@@ -92,6 +92,7 @@ countries:
       api_key: ${KEEPA_KEY}
       domain: de
       tag: offertecrol06-21
+      asins: [B0GD23KKHC]     # prodotti fissi sul sito chiesti da Giuseppe: MOVA LiDAX Ultra 1200 (22/11/2026)
       min_discount: 30
       min_price: 1
       quality: true
