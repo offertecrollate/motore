@@ -211,7 +211,7 @@ def _chart(it: dict, lang: str) -> str:
 
 
 CHART_JS = r"""
-document.querySelectorAll('.pchart').forEach(function(f){
+function ocCharts(R){(R||document).querySelectorAll('.pchart').forEach(function(f){
  var svg=f.querySelector('svg'),hit=f.querySelector('.chit'),tip=f.querySelector('.ctip');
  var pts=JSON.parse(svg.dataset.pts),hx=f.querySelector('.chx'),hd=f.querySelector('.chd');
  var poly=svg.querySelector('.cl').getAttribute('points').split(' ').map(function(p){return p.split(',').map(Number)});
@@ -225,7 +225,8 @@ document.querySelectorAll('.pchart').forEach(function(f){
  function hide(){tip.hidden=true;hx.setAttribute('visibility','hidden');hd.setAttribute('visibility','hidden')}
  hit.addEventListener('mousemove',show);hit.addEventListener('touchstart',show,{passive:true});
  hit.addEventListener('touchmove',show,{passive:true});hit.addEventListener('mouseleave',hide);
-});"""
+});}
+ocCharts();"""
 
 
 CSS = """
@@ -574,10 +575,28 @@ JS = r"""
  try{favs=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){favs={};}
  function save(){try{localStorage.setItem(KEY,JSON.stringify(favs));}catch(e){}}
  var cards=[].slice.call(document.querySelectorAll('.deal')), grid=document.getElementById('grid');
- cards.forEach(function(c){var b=c.querySelector('.fav'); if(!b)return; var k=c.dataset.key;
+ function bind(c){var b=c.querySelector('.fav'); if(!b)return; var k=c.dataset.key;
   function paint(){var on=!!favs[k]; b.setAttribute('aria-pressed',on); b.setAttribute('aria-label',on?L.fav_del:L.fav_add);}
-  paint(); b.addEventListener('click',function(){ if(favs[k])delete favs[k]; else favs[k]=1; save(); paint(); if(st.tab==='favs')apply(); });});
- function apply(){
+  paint(); b.addEventListener('click',function(){ if(favs[k])delete favs[k]; else favs[k]=1; save(); paint(); if(st.tab==='favs')apply(); });}
+ cards.forEach(bind);
+ // sito leggero (23/11/2026): le altre offerte arrivano a blocchi; ricerca e filtri usano l'indice di tutte
+ var LZ=document.getElementById('lazy'), PID=LZ?LZ.dataset.pid:'', NCH=LZ?+LZ.dataset.ch:0, REST=LZ?+LZ.dataset.n:0;
+ var loaded={}, idx=null, busy=false, nloaded=0;
+ function getIdx(){return idx?Promise.resolve(idx):fetch('/parti/'+PID+'.json').then(function(r){return r.json();}).then(function(j){idx=j;return j;});}
+ function load(i){if(loaded[i])return Promise.resolve();loaded[i]=1;
+  return fetch('/parti/'+PID+'-'+i+'.html').then(function(r){return r.text();}).then(function(h){
+   var tp=document.createElement('template');tp.innerHTML=h;var nn=[].slice.call(tp.content.querySelectorAll('.deal'));
+   nn.forEach(function(c){c.classList.add('hidden');grid.appendChild(c);bind(c);cards.push(c);});nloaded+=nn.length;
+   if(window.ocCharts)ocCharts(grid);});}
+ function filtering(){return !!(st.q.trim()||st.shop||st.cats.length||st.min||st.tab);}
+ function match(e,q){var ok=(e[3]>=st.min)&&(!st.shop||e[6]===st.shop)&&(!st.cats.length||st.cats.indexOf(e[2])>=0)&&(!q||e[1].indexOf(q)>=0);
+  if(st.tab==='errors')ok=ok&&e[4]===1; if(st.tab==='favs')ok=ok&&!!favs[e[0]]; return ok;}
+ function ensure(){if(!NCH||!filtering())return;var q=st.q.trim().toLowerCase(),my=JSON.stringify(st);
+  getIdx().then(function(j){if(JSON.stringify(st)!==my)return;var need={};j.forEach(function(e){if(!loaded[e[7]]&&match(e,q))need[e[7]]=1;});
+   var l=Object.keys(need);if(!l.length)return;Promise.all(l.map(function(i){return load(+i);})).then(function(){apply(true);});}).catch(function(){});}
+ function more(){if(busy||filtering())return;for(var i=0;i<NCH;i++){if(!loaded[i]){busy=true;load(i).then(function(){busy=false;apply(true);}).catch(function(){busy=false;});return;}}}
+ if(LZ&&'IntersectionObserver' in window)new IntersectionObserver(function(en){if(en[0].isIntersecting)more();},{rootMargin:'1500px'}).observe(LZ);
+ function apply(noLoad){
   var q=st.q.trim().toLowerCase(), n=0, list=cards.slice();
   if(st.tab==='errors'||st.min) list.sort(function(a,b){return b.dataset.pct-a.dataset.pct;});
   else list.sort(function(a,b){return b.dataset.ts-a.dataset.ts;});
@@ -586,7 +605,9 @@ JS = r"""
    if(st.tab==='errors') ok=ok&&c.dataset.err==='1';
    if(st.tab==='favs') ok=ok&&!!favs[c.dataset.key];
    c.classList.toggle('hidden',!ok); if(ok)n++; });
+  if(!filtering())n+=Math.max(0,REST-nloaded);
   document.getElementById('count').textContent=n+' '+(n===1?L.one:L.many);
+  if(!noLoad)ensure();
   var e=document.getElementById('empty'); e.classList.toggle('hidden',n>0);
   document.getElementById('emptytxt').textContent=(st.tab==='favs'&&!q)?L.nofav:L.none;
   if(window.ocOvq) ocOvq(st.q,n,st.ovq);
@@ -609,6 +630,34 @@ JS = r"""
  if(cards.length)apply();
 })();
 """
+
+
+FIRST = 200      # offerte scritte subito nella pagina (sito leggero, 23/11/2026)
+CHUNK = 250      # le altre a blocchi da 250, caricati mentre scorri o quando cerchi
+
+
+def _lazy_grid(lst: list, lang: str, t: dict, page_of, out_dir: str, pid: str) -> str:
+    """Prime FIRST offerte nella pagina; le altre in /parti/<pid>-<n>.html + indice /parti/<pid>.json per ricerca e filtri."""
+    lst = sorted(lst, key=lambda i: -_ts(i["at"]))
+    head, rest = lst[:FIRST], lst[FIRST:]
+    html_head = "".join(_card(i, lang, t, page_of(i)) for i in head)
+    if not rest:
+        return html_head, ""
+    d = os.path.join(out_dir, "parti")
+    os.makedirs(d, exist_ok=True)
+    idx = []
+    for n in range(0, len(rest), CHUNK):
+        part = rest[n:n + CHUNK]
+        with open(os.path.join(d, f"{pid}-{n // CHUNK}.html"), "w", encoding="utf-8") as f:
+            f.write("".join(_card(i, lang, t, page_of(i)) for i in part))
+        for i in part:
+            amz, pct = is_amazon(i), round(i["pct"])
+            idx.append([i["key"], f'{i["name"]} {i["shop"]}'.lower(), i.get("category") or cats.categorize(i["name"]),
+                        -1 if amz else pct, 1 if pct >= ERR_PCT else 0, _ts(i["at"]), _shop_id(i["shop"]), n // CHUNK])
+    with open(os.path.join(d, f"{pid}.json"), "w", encoding="utf-8") as f:
+        json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
+    nch = (len(rest) + CHUNK - 1) // CHUNK
+    return html_head, f'<div id="lazy" data-pid="{pid}" data-ch="{nch}" data-n="{len(rest)}" style="height:1px"></div>'
 
 
 def _money(v: float, cur: str) -> str:
@@ -906,6 +955,7 @@ def _shell(country: str, lang: str, langs: list, t: dict, ui: dict, title: str, 
 
 
 def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
+    shutil.rmtree(os.path.join(out_dir, "parti"), ignore_errors=True)   # blocchi del sito leggero: rifatti ogni giro
     langs = ccfg["langs"]
     other = "ch" if country == "it" else "it"
     base = base_url(country)
@@ -934,7 +984,8 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
                  + f'<button type="button" class="err" data-k="tab" data-v="errors" aria-pressed="false">{_svg(I["errors"], 18, 2.2)}<span class="long">{t["errors"]}</span><span class="short">{t["errors_s"]}</span></button>')
         chips += f'<button type="button" class="fv" data-k="tab" data-v="favs" aria-pressed="false">{_svg(I["favs"], 18, 2.2)}{t["favs"]}</button>'
         shop_opts = "".join(f'<option value="{sid}">{html.escape(nm)}</option>' for sid, nm in shops)
-        cards = "".join(_card(it, lang, t, _off_path(it, lang, langs) if with_page(it) else None) for it in items)
+        cards, lazy = _lazy_grid(items, lang, t, lambda it: _off_path(it, lang, langs) if with_page(it) else None,
+                                 out_dir, f"{lang}-home")
         trust_icons = [I["shield"], I["errors"], I["group"], I["truck"] if country == "it" else I["chshield"]]
         trust = "".join(f'<div>{_svg(ic, 40, 1.6)}<p style="margin:0"><b>{tt}</b><span>{dd}</span></p></div>'
                         for ic, tt, dd in zip(trust_icons, [t["t1"], t["t2"], t["t3"], t["t4_" + country]],
@@ -965,7 +1016,7 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
         offers = (
             f'<div class="layout">{_catside(lang, langs, counts, page_cats, t)}<div class="results">{topzone}'
             f'<div class="ovq hidden" id="ovq"><p id="ovqt"></p><div class="ovqb" id="ovqb"></div><small>{OVQ_LBL.get(lang, OVQ_LBL["it"])[2]}</small></div>'
-            f'<p class="count" id="count" aria-live="polite"></p><div class="grid" id="grid">{cards}</div>'
+            f'<p class="count" id="count" aria-live="polite"></p><div class="grid" id="grid">{cards}</div>{lazy}'
             f'<div class="empty hidden" id="empty"><p id="emptytxt"></p><button type="button" id="reset">{t["reset"]}</button></div></div></div>'
         ) if items else f'<div class="results">{topzone}<div class="empty"><p>{t["soon"]}</p></div></div>'
         body = (
@@ -1029,11 +1080,13 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
             title = sx["cat_title"].format(cat=cl, inx=inx)
             desc = sx["cat_desc"].format(n=len(lst), cat=cl, inx=inx, shops=shops_txt)
             cr, ld = _crumbs(country, lang, [home, (cl, None)])
+            cg, cz = _lazy_grid(lst, lang, t, lambda i: _off_path(i, lang, langs) if with_page(i) else None,
+                                out_dir, f"{lang}-cat-{c}")
             main = (cr + f'<div class="pagehead"><h1>{html.escape(sx["cat_h1"].format(cat=cl, inx=inx))}</h1>'
                     f'<p>{html.escape(desc)}</p></div>'
                     f'<div class="layout">{_catside(lang, langs, counts, page_cats, t, checked={c}, page="cat")}<div class="results">'
                     f'<p class="count" id="count" aria-live="polite"></p>'
-                    f'<div class="grid" id="grid">{"".join(_card(i, lang, t, _off_path(i, lang, langs) if with_page(i) else None) for i in lst)}</div>'
+                    f'<div class="grid" id="grid">{cg}</div>{cz}'
                     f'<div class="empty hidden" id="empty"><p id="emptytxt"></p></div></div></div>')
             _write(out_dir, _cat_path(c, lang, langs),
                    _shell(country, lang, langs, t, ui, title, desc, lambda l, c=c: _cat_path(c, l, langs), main, ld,
