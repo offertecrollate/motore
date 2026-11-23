@@ -12,10 +12,18 @@ inizio_mese = oggi.replace(day=1)
 def awin(da, a):
     righe = []
     for reg in ("IT", "CH"):
-        r = requests.get(f"https://api.awin.com/publishers/{PUB}/reports/advertiser", timeout=60,
-                         headers={"Authorization": f"Bearer {tok}"},
-                         params={"startDate": da.isoformat(), "endDate": a.isoformat(), "region": reg, "timezone": "UTC"})
-        r.raise_for_status()
+        for tentativo in range(4):   # 24/11/2026: l'API Awin a volte non risponde, riprova fino a 4 volte
+            try:
+                r = requests.get(f"https://api.awin.com/publishers/{PUB}/reports/advertiser", timeout=150,
+                                 headers={"Authorization": f"Bearer {tok}"},
+                                 params={"startDate": da.isoformat(), "endDate": a.isoformat(), "region": reg, "timezone": "UTC"})
+                r.raise_for_status()
+                break
+            except requests.RequestException:
+                if tentativo == 3:
+                    raise
+                import time
+                time.sleep(30 * (tentativo + 1))
         righe += r.json()
     return righe
 
