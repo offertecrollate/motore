@@ -17,7 +17,15 @@ for row in rd:
             piene[k] = piene.get(k, 0) + 1
     if n <= 3:
         esempi.append({k: (v or "")[:60] for k, v in row.items() if v})
-    if n >= 3000:
+    try:
+        pz, ol = float(row.get("search_price") or 0), float(row.get("product_price_old") or 0)
+        if ol > pz > 0:
+            sc = (1 - pz / ol) * 100
+            piene["_sconto>=30"] = piene.get("_sconto>=30", 0) + (sc >= 30)
+            piene["_sconto>0"] = piene.get("_sconto>0", 0) + 1
+    except ValueError:
+        pass
+    if n >= 50000:
         break
 print("righe lette:", n)
 for k in sorted(piene, key=lambda k: -piene[k]):
