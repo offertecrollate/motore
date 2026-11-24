@@ -1,0 +1,12 @@
+name: Prova catalogo Awin
+on: workflow_dispatch
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install requests pyyaml
+      - env:
+          AWIN_FEED_KEY: ${{ secrets.AWIN_FEED_KEY }}
+          ADV: "9423"
+        run: python tools/prova_feed.py

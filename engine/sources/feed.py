@@ -89,7 +89,8 @@ def awin_feed_url(list_url: str, feed_id: str = None, advertiser_id: str = None,
     m = _re.search(r"/columns/([^/]+)/", url)
     if m:
         cols = m.group(1).split(",")
-        extra = [x for x in ("aw_image_url", "large_image", "alternate_image", "merchant_thumb_url") if x not in cols]
+        extra = [x for x in ("aw_image_url", "large_image", "alternate_image", "merchant_thumb_url",
+                                 "rrp_price", "product_price_old", "base_price", "store_price") if x not in cols]
         if extra:
             url = url.replace(m.group(0), "/columns/" + ",".join(cols + extra) + "/")
     return url
@@ -129,6 +130,12 @@ class FeedSource:
         for row in reader:
             price = _num(row.get(c["price"]))
             old = _num(row.get(c["old_price"])) if c.get("old_price") else None
+            if not old and c.get("old_price") == "rrp_price":   # 24/11/2026: Mondadori e altri usano altre colonne Awin
+                for k in ("product_price_old", "base_price", "store_price"):
+                    v = _num(row.get(k))
+                    if v and v > _num(row.get(c["price"]) or 0):
+                        old = v
+                        break
             if c.get("sale_price"):              # Google: price = listino, sale_price = scontato
                 sale = _num(row.get(c["sale_price"]))
                 if sale and price and sale < price:
