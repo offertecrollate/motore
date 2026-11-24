@@ -96,7 +96,8 @@ jobs:
               git config user.name "Offerte Crollate"
               git config user.email "offertecrollate@gmail.com"
               git add -A
-              git diff --cached --quiet || (git commit -qm "Offerte aggiornate" && git push -q) )
+              # 24/11/2026: se nel frattempo qualcuno ha modificato il sito, unisci (vincono i file del motore) e riprova
+              git diff --cached --quiet || (git commit -qm "Offerte aggiornate" && (git push -q || (git pull -q --rebase -X theirs && git push -q))) )
           done
 
       - name: Salva lo storico prezzi (ramo "dati", un solo file)
