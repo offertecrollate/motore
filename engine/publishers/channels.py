@@ -52,16 +52,36 @@ class TelegramPublisher(_Base):
         plain = text
         url = deal.product.url
         lbl = {"it": "VAI ALL'OFFERTA", "de": "ZUM ANGEBOT", "fr": "VOIR L'OFFRE"}.get(self.lang, "VAI ALL'OFFERTA")
-        text = _h.escape(plain).replace(_h.escape(f"👉 {url}"), f'👉 <a href="{_h.escape(url)}"><b>{lbl}</b></a>')
+        def _cap(pl):
+            return _h.escape(pl).replace(_h.escape(f"👉 {url}"), f'👉 <a href="{_h.escape(url)}"><b>{lbl}</b></a>')
+        text = _cap(plain)
+        # 24/11/2026: oltre 1024 caratteri Telegram rifiuta la foto e tagliare l'HTML rompe il link (errore 400):
+        # accorcia la riga più lunga del testo (di solito il nome del prodotto) finché ci sta
+        pl = plain
+        while len(text) > 1024:
+            righe = [r for r in pl.split("\n") if not r.startswith("👉")]
+            if not righe:
+                break
+            lunga = max(righe, key=len)
+            if len(lunga) < 40:
+                break
+            pl = pl.replace(lunga, lunga[: max(30, len(lunga) - (len(text) - 1024) - 5)].rstrip() + "…", 1)
+            text = _cap(pl)
         card = deal.extra.get("card")
         if card:
             r = requests.post(f"{api}/sendPhoto", timeout=60, data={
                 "chat_id": self.cfg["chat_id"], "caption": text[:1024], "parse_mode": "HTML"},
                 files={"photo": _img(card)})
+            if r.status_code == 400:
+                r = requests.post(f"{api}/sendMessage", timeout=30, data={
+                    "chat_id": self.cfg["chat_id"], "text": text, "parse_mode": "HTML"})
         elif deal.product.image and not deal.extra.get("adult"):   # adulti: mai la foto del negozio
             r = requests.post(f"{api}/sendPhoto", timeout=30, data={
                 "chat_id": self.cfg["chat_id"], "photo": deal.product.image,
                 "caption": text[:1024], "parse_mode": "HTML"})
+            if r.status_code == 400:   # foto del negozio rifiutata da Telegram: manda il testo con l'anteprima
+                r = requests.post(f"{api}/sendMessage", timeout=30, data={
+                    "chat_id": self.cfg["chat_id"], "text": text, "parse_mode": "HTML"})
         else:
             # senza foto (es. Amazon): anteprima grande del link SOPRA il testo, così l'immagine si vede subito
             r = requests.post(f"{api}/sendMessage", timeout=30, data={
