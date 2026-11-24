@@ -308,18 +308,20 @@ countries:
       keywords: [smartphone, cuffie bluetooth, smartwatch, aspirapolvere robot, power bank, tablet, auricolari, caricatore, telecamera, lampada led, utensili, giocattoli, orologio, zaino, accessori auto]
     # Maxi Sport IT (Awin 9923): sport, scarpe e abbigliamento, approvato il 15/11/2026
     # Moulinex IT (Awin 9450): piccoli elettrodomestici da cucina, attivo dal 13/11/2026
-    # Mondadori Store (Awin 9423, accettati il 24/11/2026): libri, videogiochi, idee regalo, Kobo
-    - name: awin_mondadori_it
-      type: feed
-      preset: awin
-      currency: EUR
-      shop: Mondadori Store
-      site_old_price: true
-      min_discount: 30
-      awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
-      awin_advertiser_id: '9423'
-      history: sconti         # catalogo enorme: storico solo dei prodotti in sconto
-      affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
+    # Mondadori Store (Awin 9423): catalogo Awin = solo libri (961.745), nessun prezzo barrato, e in Italia
+    # i libri nuovi non possono avere sconti oltre il 5-15% (legge Levi). Lettura spenta il 24/11/2026:
+    # resta nella ricerca del sito e in link.html. Per riattivarla togli il # dalle righe qui sotto.
+    #- name: awin_mondadori_it
+    #  type: feed
+    #  preset: awin
+    #  currency: EUR
+    #  shop: Mondadori Store
+    #  site_old_price: true
+    #  min_discount: 30
+    #  awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
+    #  awin_advertiser_id: '9423'
+    #  history: sconti         # catalogo enorme: storico solo dei prodotti in sconto
+    #  affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     - name: awin_moulinex_it
       type: feed
       preset: awin
