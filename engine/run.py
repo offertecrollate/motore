@@ -136,7 +136,11 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     # fonti di cui ci fidiamo del "prezzo prima" anche senza nostro storico (es. Keepa: media a 90 giorni)
     rules = dict(c["rules"], trust_sources={s["name"] for s in c["sources"] if s.get("trust_old_price")})
     deals = find_deals(db, products, rules, today=today)
-    db.save(products, day=today)
+    # 24/11/2026: dei cataloghi enormi (es. Mondadori, milioni di prodotti) si salva lo storico solo dei prodotti
+    # in sconto, altrimenti lo storico supera i limiti di GitHub. Fonti con "history: sconti".
+    solo_sconti = {s["name"] for s in c["sources"] if s.get("history") == "sconti"}
+    db.save([p for p in products if p.source not in solo_sconti or (p.old_price and p.old_price > p.price * 1.05)],
+            day=today)
     db.prune(cfg.get("keep_days", 100))
 
     # negozi che non ci hanno ancora accettato: si salva lo storico ma non si pubblica

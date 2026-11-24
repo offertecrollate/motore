@@ -6,7 +6,10 @@ set -e
 case "$1" in
   carica)
     git fetch -q origin dati 2>/dev/null || { echo "Primo avvio: storico vuoto"; exit 0; }
-    if git cat-file -e origin/dati:prezzi.db.gz.enc 2>/dev/null; then
+    if git cat-file -e origin/dati:prezzi.db.gz.enc.000 2>/dev/null; then   # 24/11/2026: file diviso in pezzi < 100 MB
+      for p in $(git ls-tree --name-only origin/dati | grep '^prezzi.db.gz.enc.[0-9]' | sort); do git show origin/dati:$p; done \
+        | openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:DB_PASS | gunzip > prezzi.db
+    elif git cat-file -e origin/dati:prezzi.db.gz.enc 2>/dev/null; then
       git show origin/dati:prezzi.db.gz.enc | openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:DB_PASS | gunzip > prezzi.db
     else
       git show origin/dati:prezzi.db.gz | gunzip > prezzi.db
@@ -27,6 +30,9 @@ case "$1" in
     cd /tmp/dati && git init -q -b dati
     git config user.name "Offerte Crollate"; git config user.email "offertecrollate@gmail.com"
     [ -f "$OLDPWD/keepa_prezzi.json" ] && cp "$OLDPWD/keepa_prezzi.json" . && git add keepa_prezzi.json
+    if [ "$f" = prezzi.db.gz.enc ]; then          # GitHub rifiuta i file oltre 100 MB: dividi in pezzi da 90 MB
+      split -b 90m -d -a 3 $f $f. && rm $f && f="$f.*"
+    fi
     git add $f && git commit -qm "Storico prezzi $(date -u +%F_%H%M) ${2:-}"
     git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dati ;;
   *) echo "uso: carica | salva"; exit 2 ;;

@@ -263,6 +263,7 @@ countries:
       min_discount: 30
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '14040'
+      history: sconti
       awin_lang: it           # catalogo in italiano, se MediaMarkt lo offre
       affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     publishers:
@@ -317,6 +318,7 @@ countries:
       min_discount: 30
       awin_list: https://ui.awin.com/productdata-darwin-download/publisher/3152592/${AWIN_FEED_KEY}/1/feedList
       awin_advertiser_id: '9423'
+      history: sconti         # catalogo enorme: storico solo dei prodotti in sconto
       affiliate: true         # link Awin già affiliato: può andare su Telegram e Facebook
     - name: awin_moulinex_it
       type: feed
