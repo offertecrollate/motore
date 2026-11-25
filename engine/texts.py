@@ -100,6 +100,8 @@ def fb_text(deal: Deal, lang: str, tag: str = "") -> str:
     pre = (f"{tag} " if tag else "") + (f"{fl} " if fl else "")
     if deal.level == "errore":
         first = f"{pre}{t['errore']}: {p.name} a -{deal.discount_pct:.0f}%!"
+    elif (deal.discount_pct or 0) < 1:      # prodotto fisso senza sconto (es. buoni regalo): niente "-0%"
+        first = f"{pre}🎁 {p.name}"
     else:
         first = f"{pre}{_stella(p.name) or '🔥 '}{p.name} a -{deal.discount_pct:.0f}%!"
     if h:      # frase simpatica subito accanto a #ADV e bandiera, poi prodotto e sconto

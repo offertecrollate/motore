@@ -428,6 +428,7 @@ countries:
       api_key: ${KEEPA_KEY}
       domain: it
       tag: offertecrolla-21
+      asins_post: true        # i prodotti fissi di Amazon.it escono anche su Telegram e Facebook
       asins: [B0CSFNKZS8]     # buoni regalo Zalando (offerta Black Friday su Amazon), chiesti da Giuseppe 25/11/2026
       min_discount: 30
       min_price: 1

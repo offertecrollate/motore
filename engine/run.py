@@ -170,6 +170,14 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     #    15-20 per sito a ogni giro, divise tra i negozi a turno (decisione di Giuseppe del 15/11/2026):
     #    a ogni turno la più forte di ciascun negozio, partendo dal negozio con lo sconto più alto
     nuove, nomi, riserva = [], set(), []
+    # 25/11/2026: prodotti fissi con "asins_post: true" vanno anche su Telegram/Facebook (una volta ogni N giorni)
+    post_fissi = {s["name"] for s in c["sources"] if s.get("asins_post")}
+    for d in site_deals:
+        if getattr(d.product, "pinned", False) and d.product.source in post_fissi and not any(
+                db.already_posted(d.product.key, paese, d.product.price, c["rules"].get("repost_after_days", 7))
+                for paese in ("it", "ch")):
+            nuove.append(d)
+            nomi.add((d.product.name or "").strip().lower())
     for d in deals:
         nome = (d.product.name or "").strip().lower()
         if nome in nomi:
