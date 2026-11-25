@@ -429,7 +429,7 @@ label.search .sbtn.ovb{border-radius:20px;min-height:40px}
 @media(max-width:700px){
  .xbar{padding:10px 12px 12px;gap:10px 6px}
  .xbar .brand img{height:34px}
- .here{font-size:11px;opacity:.85}.here .flagsvg{width:20px;height:14px}
+ .here{font-size:13px}.here .flagsvg{width:30px;height:21px}
  .hicons{gap:2px}.hic{min-width:36px;min-height:36px;padding:0 2px}.hic svg{width:22px;height:22px}
  .hic.sw span,.hic.rf span{display:none!important}
  .hic.sw .flagsvg,.hic.sw svg{width:24px;height:24px;border-radius:5px}
@@ -446,8 +446,9 @@ label.search .sbtn.ovb{border-radius:20px;min-height:40px}
 .hic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:50px;padding:0 6px;border-radius:8px;color:#fff !important;text-decoration:none;font-size:11px;font-weight:400}
 .hic:hover{background:#1f1f1f}.hic.tg svg{color:#2aa6e0}.hic.fb svg{color:#3b82f6}.hic svg{width:22px;height:22px;flex:none}
 .hic .flagsvg{width:24px;height:24px;border-radius:4px}
-.here{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;font-weight:500;line-height:1.15;white-space:nowrap;margin-left:-8px}
-.here .flagsvg{width:26px;height:18px;border-radius:3px;flex:none}.here .flagsvg.sq{width:20px;height:20px}
+.here{display:flex;align-items:center;gap:8px;color:#fff;font-size:16px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.15;white-space:nowrap;margin-left:-4px;padding:5px 12px 5px 6px;border-radius:10px;background:#ffffff14;border:1px solid #ffffff2e}
+.here .flagsvg{width:40px;height:28px;border-radius:4px;flex:none;box-shadow:0 0 0 1px #0006}.here .flagsvg.sq{width:30px;height:30px}
+.tz1{grid-template-columns:1fr}.tz1 .rcol{flex-direction:row;flex-wrap:wrap;max-width:none;width:100%}.tz1 .topdeal{flex:1 1 100%!important}.tz1 .rcol a{flex:1 1 260px}
 .hic.sw span{white-space:nowrap}
 
 .xbar .langs a{min-height:36px;padding:0 12px;font-size:13px;background:#1a1a1a;border-color:#333;color:#fff}
@@ -527,8 +528,8 @@ footer{color:#555}footer a{color:#333}
  .xbar{flex-wrap:wrap;gap:8px 10px;padding:8px 10px}.xbar .brand img{height:40px}
  .xbar .search{order:3;flex:1 1 100%;min-height:42px}
  .hicons{margin-left:auto}.hic{min-width:44px;min-height:40px}.hic span{display:none}.hic.sw span,.hic.rf span{display:block;font-size:10px}.hic.sw,.hic.rf{min-width:0;padding:0 4px}
- .here{margin-left:0;font-size:12px}.here span{display:block;max-width:70px;white-space:normal}
- .xbar{gap:8px 6px}.xbar .brand img{height:36px}.hicons{gap:0}.hic{min-width:34px;padding:0 3px}.hic svg{width:24px;height:24px}.here{gap:5px;font-size:11px}.here span{max-width:58px}
+ .here{margin-left:0;font-size:13px}.here span{display:block}
+ .xbar{gap:8px 6px}.xbar .brand img{height:36px}.hicons{gap:0}.hic{min-width:34px;padding:0 3px}.hic svg{width:24px;height:24px}.here{gap:6px;font-size:12px;padding:4px 8px 4px 4px}.here .flagsvg{width:30px;height:21px}.here .flagsvg.sq{width:24px;height:24px}
  .xbar .langs{order:2}
  .wfull .layout{grid-template-columns:1fr;gap:0}
  .wfull .side{position:sticky;top:var(--fh,150px);min-height:0;max-height:calc(100vh - var(--fh,150px));border-bottom:1px solid #333;box-shadow:none;z-index:15}
@@ -887,9 +888,9 @@ OVQJS = ("function ocOvqUrl(s,q){return s[2]?s[1]+encodeURIComponent(s[2]+encode
 SW_LBL = {"it": {"it": "Passa a Italia", "ch": "Passa a Svizzera"},
           "de": {"it": "Zu Italien", "ch": "Zur Schweiz"},
           "fr": {"it": "Vers l'Italie", "ch": "Vers la Suisse"}}
-HERE_LBL = {"it": {"it": "Pagina Italia", "ch": "Pagina Svizzera"},
-            "de": {"it": "Seite Italien", "ch": "Seite Schweiz"},
-            "fr": {"it": "Site Italie", "ch": "Site Suisse"}}
+HERE_LBL = {"it": {"it": "Italia", "ch": "Svizzera"},
+            "de": {"it": "Italien", "ch": "Schweiz"},
+            "fr": {"it": "Italie", "ch": "Suisse"}}
 
 
 def _xbar(t: dict, country: str, home_href: str, root: str, search: str, langsw: str = "", lang: str = "it") -> str:
@@ -1013,7 +1014,8 @@ def render_country(items: list, country: str, ccfg: dict, out_dir: str) -> None:
             f'<a class="t" href="{TG_URL}" target="_blank" rel="noopener">{TG}<span>Telegram</span></a>'
             f'<a class="sw" href="{base_url(other)}/">{FLAG_SVG[other]}<span class="lg"><small>{t["goto"]}</small><b>{t["other_" + other]}</b></span><span class="sh">{t["other_" + other]}</span></a></div>'
             f'</div></section>')
-        topzone = f'<div class="topzone">{hero}{_rcol(t)}</div>'
+        # 25/11/2026 (Giuseppe): tolto il riquadro grande con la foto, pagina più pulita
+        topzone = f'<div class="topzone tz1">{_rcol(t)}</div>'
         offers = (
             f'<div class="layout">{_catside(lang, langs, counts, page_cats, t)}<div class="results">{topzone}'
             f'<div class="ovq hidden" id="ovq"><p id="ovqt"></p><div class="ovqb" id="ovqb"></div><small>{OVQ_LBL.get(lang, OVQ_LBL["it"])[2]}</small></div>'
