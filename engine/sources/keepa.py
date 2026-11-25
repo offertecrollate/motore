@@ -84,7 +84,7 @@ class KeepaSource:
         tag = c.get("tag", "")
         out, seen = [], set()
         # 0) 25/11/2026: i prodotti fissi scelti da Giuseppe per primi, prima che finiscano i gettoni Keepa
-        fissi = self._fissi(dom_id, site, tag)
+        fissi = self._fissi(dom_id, site, tag) + self._manuali(site, tag)
         # 1) prima le categorie che su Amazon vendono di più (decisione di Giuseppe del 16/11/2026):
         #    elettronica, PS5 e giochi, smartphone, iPad, monitor, TV grandi, carta igienica, merendine…
         #    solo prodotti molto venduti (classifica vendite alta), così niente "cazzate".
@@ -138,6 +138,18 @@ class KeepaSource:
         if c.get("amazon_prices", True):
             out = self._prezzi_amazon(out, dom_id)
         return out + fissi
+
+    def _manuali(self, site, tag) -> List[Product]:
+        """Prodotti messi a mano da Giuseppe senza controllo Keepa (es. buoni regalo: prezzo = valore del buono)."""
+        out = []
+        for m in self.cfg.get("manuali") or []:
+            p = Product(source=self.cfg["name"], product_id=str(m["id"]), name=m["name"], price=float(m["price"]),
+                        currency="EUR", shop=f"Amazon.{self.cfg.get('domain', 'it')}",
+                        url=f"https://www.{site}/dp/{m['id']}" + (f"?tag={tag}" if tag else ""),
+                        image=m.get("image"), old_price=float(m.get("old_price") or m["price"]))
+            p.pinned = True
+            out.append(p)
+        return out
 
     def _fissi(self, dom_id, site, tag) -> List[Product]:
         """Prodotti scelti da Giuseppe (config "asins"): sempre sul sito, con prezzo Amazon aggiornato,

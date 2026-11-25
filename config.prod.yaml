@@ -429,7 +429,8 @@ countries:
       domain: it
       tag: offertecrolla-21
       asins_post: true        # i prodotti fissi di Amazon.it escono anche su Telegram e Facebook
-      asins: [B0CSFNKZS8]     # buoni regalo Zalando (offerta Black Friday su Amazon), chiesti da Giuseppe 25/11/2026
+      manuali:                # prodotti messi a mano, senza Keepa (Giuseppe 25/11/2026)
+        - {id: B0CSFNKZS8, name: "Buono regalo Zalando digitale (via e-mail), da 15 €", price: 15, image: "https://raw.githubusercontent.com/offertecrollate/motore/main/assets/buono_regalo.jpg"}
       min_discount: 30
       min_price: 1
       quality: true           # 16/11: troppe "cazzate" -> solo prodotti con buone recensioni e venduti
