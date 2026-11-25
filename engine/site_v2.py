@@ -654,7 +654,7 @@ def _lazy_grid(lst: list, lang: str, t: dict, page_of, out_dir: str, pid: str) -
         for i in part:
             amz, pct = is_amazon(i), round(i["pct"])
             idx.append([i["key"], f'{i["name"]} {i["shop"]}'.lower(), i.get("category") or cats.categorize(i["name"]),
-                        -1 if amz else pct, 1 if pct >= ERR_PCT else 0, _ts(i["at"]), _shop_id(i["shop"]), n // CHUNK])
+                        0 if amz else pct, 1 if pct >= ERR_PCT else 0, _ts(i["at"]), _shop_id(i["shop"]), n // CHUNK])
     with open(os.path.join(d, f"{pid}.json"), "w", encoding="utf-8") as f:
         json.dump(idx, f, ensure_ascii=False, separators=(",", ":"))
     nch = (len(rest) + CHUNK - 1) // CHUNK
@@ -676,7 +676,7 @@ def _card(it: dict, lang: str, t: dict, page: str = None) -> str:
     chart = "" if amz else _chart(it, lang)
     chart_box = (f'<details><summary>{_svg(I["chart"], 16, 2.2)}{t["chart"]}</summary>{chart}</details>') if chart else ""
     return (
-        f'<article class="deal" data-key="{html.escape(it["key"])}" data-cat="{cat}" data-pct="{-1 if amz else pct}" '
+        f'<article class="deal" data-key="{html.escape(it["key"])}" data-cat="{cat}" data-pct="{0 if amz else pct}" '
         f'data-err="{1 if err else 0}" data-ts="{_ts(it["at"])}" data-shop="{_shop_id(it["shop"])}" data-q="{q}">'
         + ("" if amz else f'<span class="pct">-{pct}%</span>')
         + (f'<span class="err">⚡ {t["maybe"]}</span>' if err and not amz else "")
