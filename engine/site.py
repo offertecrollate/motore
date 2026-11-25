@@ -494,7 +494,8 @@ def country_dir(site: dict, country: str) -> str:
     return ccfg.get("out_dir") or os.path.join(site.get("out_dir", "site"), country)
 
 
-def update_site(deals: List[Deal], country: str, site: dict, keep: int = 0, replace_sources=()) -> None:
+def update_site(deals: List[Deal], country: str, site: dict, keep: int = 0, replace_sources=(),
+                fonti_attive=None, vietati=()) -> None:
     ccfg = site["countries"][country]
     out_dir = country_dir(site, country)
     os.makedirs(out_dir, exist_ok=True)
@@ -514,6 +515,10 @@ def update_site(deals: List[Deal], country: str, site: dict, keep: int = 0, repl
     old = _load(data_path)
     if replace_sources:              # negozi "solo sito": resta solo ciò che è in offerta adesso
         old = [it for it in old if it.get("source") not in set(replace_sources)]
+    if fonti_attive is not None:     # 26/11/2026: negozi tolti dalla configurazione (es. Moulinex) spariscono dal sito
+        old = [it for it in old if it.get("source") in fonti_attive]
+    if vietati:                      # prodotti che i negozi ci hanno chiesto di togliere (es. Freezi)
+        old = [it for it in old if not any(v in str(it.get("name", "")).lower() for v in vietati)]
     for it in new + old:
         if it["key"] not in seen:
             seen.add(it["key"])

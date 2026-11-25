@@ -338,7 +338,8 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
     if (site_list or site_only or site_deals) and cfg.get("site") and (not dry_run or cfg["site"].get("update_in_test", True)):
         letti = {p.source for p in products}          # se un negozio non risponde, le sue offerte restano
         da_rifare = {s["name"] for s in c["sources"] if s.get("site_only") or s.get("site_old_price")}
-        update_site(site_list, country, cfg["site"], replace_sources=da_rifare & letti)
+        update_site(site_list, country, cfg["site"], replace_sources=da_rifare & letti,
+                    fonti_attive={s["name"] for s in c["sources"]}, vietati=vietati)
     return fresh
 
 
