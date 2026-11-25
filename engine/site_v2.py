@@ -410,7 +410,7 @@ a{color:#111}
 .hero h1,.deal .pr b,.deal .pct,.offer .pr b,.offer h1,.pagehead h1,.tdpr{font-family:Montserrat,Arial,sans-serif}
 .stick{position:sticky;top:0;z-index:40;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 .xbar{display:flex;align-items:center;gap:22px;background:#0b0b0b;padding:8px clamp(12px,1.6vw,28px)}
-.xbar .brand img{height:52px;width:auto;display:block}
+.xbar .brand img{height:62px;width:auto;display:block}
 .xbar .search{flex:1;display:flex;align-items:center;gap:10px;min-height:46px;border:0;border-radius:6px;background:#fff;padding:0 0 0 16px;overflow:hidden;margin:0}
 .xbar .search>svg{color:#888;flex:none}
 .xbar .search input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:#111;font:400 16px Inter,system-ui,Arial,sans-serif}
@@ -448,7 +448,7 @@ label.search .sbtn.ovb{border-radius:20px;min-height:40px}
 .hic .flagsvg{width:24px;height:24px;border-radius:4px}
 .here{display:flex;align-items:center;gap:8px;color:#fff;font-size:16px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;line-height:1.15;white-space:nowrap;margin-left:-4px;padding:5px 12px 5px 6px;border-radius:10px;background:#ffffff14;border:1px solid #ffffff2e}
 .here .flagsvg{width:40px;height:28px;border-radius:4px;flex:none;box-shadow:0 0 0 1px #0006}.here .flagsvg.sq{width:30px;height:30px}
-.tz1{grid-template-columns:1fr}.tz1 .rcol{flex-direction:row;flex-wrap:wrap;max-width:none;width:100%}.tz1 .topdeal{flex:1 1 100%!important}.tz1 .rcol a{flex:1 1 260px}
+.topzone.tz1{grid-template-columns:1fr}.tz1 .rcol{display:flex;flex-direction:row;flex-wrap:wrap;max-width:none;width:100%}.tz1 .topdeal{flex:1 1 100%!important}.tz1 .rcol a{flex:1 1 260px}
 .hic.sw span{white-space:nowrap}
 
 .xbar .langs a{min-height:36px;padding:0 12px;font-size:13px;background:#1a1a1a;border-color:#333;color:#fff}
@@ -525,11 +525,11 @@ footer{color:#555}footer a{color:#333}
 .langs a[aria-current]{color:#fff}
 @media (max-width:1100px){.topzone{grid-template-columns:1fr}.rcol{flex-direction:row;flex-wrap:wrap}.rcol a{flex:1 1 260px}}
 @media (max-width:860px){
- .xbar{flex-wrap:wrap;gap:8px 10px;padding:8px 10px}.xbar .brand img{height:40px}
+ .xbar{flex-wrap:wrap;gap:8px 10px;padding:8px 10px}.xbar .brand img{height:48px}
  .xbar .search{order:3;flex:1 1 100%;min-height:42px}
  .hicons{margin-left:auto}.hic{min-width:44px;min-height:40px}.hic span{display:none}.hic.sw span,.hic.rf span{display:block;font-size:10px}.hic.sw,.hic.rf{min-width:0;padding:0 4px}
  .here{margin-left:0;font-size:13px}.here span{display:block}
- .xbar{gap:8px 6px}.xbar .brand img{height:36px}.hicons{gap:0}.hic{min-width:34px;padding:0 3px}.hic svg{width:24px;height:24px}.here{gap:6px;font-size:12px;padding:4px 8px 4px 4px}.here .flagsvg{width:30px;height:21px}.here .flagsvg.sq{width:24px;height:24px}
+ .xbar{gap:8px 6px}.xbar .brand img{height:44px}.hicons{gap:0}.hic{min-width:34px;padding:0 3px}.hic svg{width:24px;height:24px}.here{gap:6px;font-size:12px;padding:4px 8px 4px 4px}.here .flagsvg{width:30px;height:21px}.here .flagsvg.sq{width:24px;height:24px}
  .xbar .langs{order:2}
  .wfull .layout{grid-template-columns:1fr;gap:0}
  .wfull .side{position:sticky;top:var(--fh,150px);min-height:0;max-height:calc(100vh - var(--fh,150px));border-bottom:1px solid #333;box-shadow:none;z-index:15}
@@ -898,7 +898,7 @@ def _xbar(t: dict, country: str, home_href: str, root: str, search: str, langsw:
     other = "ch" if country == "it" else "it"
     here = FLAG_SVG[country]
     return (f'<div class="xbar"><a class="brand" href="{home_href}" aria-label="Offerte Crollate">'
-            f'<picture><source srcset="{root}assets/logo_dark.webp" type="image/webp"><img src="{root}assets/logo_dark.png" alt="Offerte Crollate" width="144" height="52"></picture></a>'
+            f'<picture><source srcset="{root}assets/logo_site.webp" type="image/webp"><img src="{root}assets/logo_site.png" alt="Offerte Crollate" width="107" height="52"></picture></a>'
             f'<span class="here">{here}<span>{HERE_LBL[lang][country]}</span></span>'
             + search
             + (f'<nav class="langs" aria-label="Lingua / Sprache / Langue">{langsw}</nav>' if langsw else "")
