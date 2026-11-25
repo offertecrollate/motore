@@ -245,11 +245,15 @@ def make(name: str, price: float, old: float, currency: str, shop: str,
             can.paste(p.convert("RGB"), (px, py))
 
     # logo a pennellata
-    logo_path = os.path.join(ASSETS, "logo_brush.png")
+    logo_path = os.path.join(ASSETS, "logo_card_v3.png")    # 25/11/2026: nuovo logo di Giuseppe (carrello, cartellino %)
     if os.path.exists(logo_path):
-        lg = Image.open(logo_path).convert("RGB")          # logo con il suo fondo bianco (come la card)
-        k = 760 / lg.width                                 # logo intero di Giuseppe (2172x724)
-        lg = lg.resize((760, int(lg.height * k)), Image.LANCZOS)
+        lg = Image.open(logo_path).convert("RGBA")
+        k = min(740 / lg.width, 315 / lg.height)              # non deve coprire il riquadro dello sconto
+        lg = lg.resize((int(lg.width * k), int(lg.height * k)), Image.LANCZOS)
+        can.paste(lg, (28, 30), lg)
+    elif os.path.exists(os.path.join(ASSETS, "logo_brush.png")):
+        lg = Image.open(os.path.join(ASSETS, "logo_brush.png")).convert("RGB")
+        lg = lg.resize((760, int(lg.height * 760 / lg.width)), Image.LANCZOS)
         can.paste(lg, (28, 34))
 
     # descrizione: nome del prodotto (e negozio) in alto a destra, accanto al logo
