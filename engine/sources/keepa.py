@@ -83,6 +83,8 @@ class KeepaSource:
         dom_id, site = DOMAINS[c.get("domain", "it")]
         tag = c.get("tag", "")
         out, seen = [], set()
+        # 0) 25/11/2026: i prodotti fissi scelti da Giuseppe per primi, prima che finiscano i gettoni Keepa
+        fissi = self._fissi(dom_id, site, tag)
         # 1) prima le categorie che su Amazon vendono di più (decisione di Giuseppe del 16/11/2026):
         #    elettronica, PS5 e giochi, smartphone, iPad, monitor, TV grandi, carta igienica, merendine…
         #    solo prodotti molto venduti (classifica vendite alta), così niente "cazzate".
@@ -135,8 +137,7 @@ class KeepaSource:
                 break
         if c.get("amazon_prices", True):
             out = self._prezzi_amazon(out, dom_id)
-        out += self._fissi(dom_id, site, tag)
-        return out
+        return out + fissi
 
     def _fissi(self, dom_id, site, tag) -> List[Product]:
         """Prodotti scelti da Giuseppe (config "asins"): sempre sul sito, con prezzo Amazon aggiornato,
@@ -146,8 +147,12 @@ class KeepaSource:
             return []
         out = []
         try:
-            r = requests.get(f"{API}/product", timeout=90, params={
-                "key": self.key, "domain": dom_id, "asin": ",".join(asins), "stats": 60, "buybox": 1, "history": 0})
+            for prova in range(4):   # se i gettoni sono finiti aspetta che si ricarichino (pochi per pochi prodotti)
+                r = requests.get(f"{API}/product", timeout=90, params={
+                    "key": self.key, "domain": dom_id, "asin": ",".join(asins), "stats": 60, "buybox": 1, "history": 0})
+                if r.status_code != 429:
+                    break
+                time.sleep(20)
             r.raise_for_status()
             for pr in r.json().get("products") or []:
                 st = pr.get("stats") or {}
