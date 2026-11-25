@@ -428,6 +428,7 @@ countries:
       api_key: ${KEEPA_KEY}
       domain: it
       tag: offertecrolla-21
+      asins: [B0CSFNKZS8]     # buoni regalo Zalando (offerta Black Friday su Amazon), chiesti da Giuseppe 25/11/2026
       min_discount: 30
       min_price: 1
       quality: true           # 16/11: troppe "cazzate" -> solo prodotti con buone recensioni e venduti
