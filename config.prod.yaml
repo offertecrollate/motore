@@ -33,6 +33,7 @@ site:
 countries:
   ch:
     rules:
+      vietati: [freezi]       # 25/11/2026: Moulinex/Awin ha chiesto di togliere la gamma Moulinex Freezi da tutti i canali
       max_site_only: 0         # nessun limite al totale del sito (20/11/2026)
       history_days: 30
       min_history: 7
@@ -276,6 +277,7 @@ countries:
       page_token: ${FB_PAGE_TOKEN}
   it:
     rules:
+      vietati: [freezi]       # 25/11/2026: Moulinex/Awin ha chiesto di togliere la gamma Moulinex Freezi da tutti i canali
       max_site_only: 0         # nessun limite al totale del sito (20/11/2026)
       history_days: 30
       min_history: 7

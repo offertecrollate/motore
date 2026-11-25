@@ -118,6 +118,15 @@ def run_country(cfg: dict, country: str, dry_run: bool = False, today: date = No
         except Exception as e:  # una fonte rotta non blocca le altre
             log.error("Fonte %s non letta: %s", s["name"], e)
 
+    # 1b. prodotti che i negozi ci hanno chiesto di NON promuovere (rules.vietati: parole nel nome, maiuscole o no)
+    #     25/11/2026: Moulinex/Awin chiede di togliere tutta la gamma "Moulinex Freezi" da ogni canale
+    vietati = [str(v).lower() for v in cfg.get("rules", {}).get("vietati", []) + c.get("rules", {}).get("vietati", [])]
+    if vietati:
+        prima = len(products)
+        products = [p for p in products if not any(v in (p.name or "").lower() for v in vietati)]
+        if prima != len(products):
+            log.info("Esclusi %d prodotti vietati dai negozi (%s)", prima - len(products), ", ".join(vietati))
+
     # 1a. offerte già pubblicate: se il prezzo è tornato su o il prodotto non c'è più, le chiudo
     publishers_all = [build_publisher(p) for p in c["publishers"]]
     if not dry_run:
